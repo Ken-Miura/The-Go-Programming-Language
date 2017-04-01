@@ -1,1 +1,1 @@
-go run echo.go arg1 arg2 arg3
+go run main.go arg1 arg2 arg3
