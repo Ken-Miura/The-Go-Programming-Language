@@ -1,0 +1,1 @@
+go test -bench . -args arg1 arg2 arg3
