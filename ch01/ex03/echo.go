@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Miura
-package echo
+package ex03
 
 import (
 	"fmt"

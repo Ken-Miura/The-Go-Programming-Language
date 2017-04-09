@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Mirua
-package echo
+package ex03
 
 import "testing"
 
