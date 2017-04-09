@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/gif"
@@ -11,6 +12,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -31,19 +33,35 @@ func main() {
 		var cycles, res float64 = 0, 0
 		var size, nframes, delay int = 0, 0, 0
 		for k, v := range r.Form {
-			// 簡潔に目的の処理だけ記載したいのでstrconv.AtoiとParseFloatのエラー無視
+			var err error
 			if k == "cycles" {
-				cycles, _ = strconv.ParseFloat(v[0], 64)
+				cycles, err = strconv.ParseFloat(v[0], 64)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "parsing variable cycles: %v\n", err)
+				}
 			} else if k == "res" {
-				res, _ = strconv.ParseFloat(v[0], 64)
+				res, err = strconv.ParseFloat(v[0], 64)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "parsing variable res: %v\n", err)
+				}
 			} else if k == "size" {
-				size, _ = strconv.Atoi(v[0])
+				size, err = strconv.Atoi(v[0])
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "parsing variable size: %v\n", err)
+				}
 			} else if k == "nframes" {
-				nframes, _ = strconv.Atoi(v[0])
+				nframes, err = strconv.Atoi(v[0])
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "parsing variable nframes: %v\n", err)
+				}
 			} else if k == "delay" {
-				delay, _ = strconv.Atoi(v[0])
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "parsing variable delay: %v\n", err)
+				}
+				delay, err = strconv.Atoi(v[0])
 			}
 		}
+		// パースが失敗したり、異常値をパラメータとして渡されたり、パラメータを何も渡されなかったりしたときは下記の値に設定
 		if cycles <= 0 {
 			cycles = 5
 		}
