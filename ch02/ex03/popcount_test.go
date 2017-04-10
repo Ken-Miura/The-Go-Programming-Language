@@ -25,3 +25,15 @@ func TestPopCountUsingLoop(t *testing.T) { // テキストのサンプルコー�
 		t.Fatalf("expected is " + strconv.Itoa(expected3) + " but actual is " + strconv.Itoa(actual3))
 	}
 }
+
+func BenchmarkPopCount(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		PopCount(0x1234567890ABCDEF)
+	}
+}
+
+func BenchmarkPopCountUsingLoop(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		PopCountUsingLoop(0x1234567890ABCDEF)
+	}
+}
