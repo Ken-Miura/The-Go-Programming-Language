@@ -1,44 +1,65 @@
 // Copyright 2017 Ken Mirua
 package ex01
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
-func TestCToF(t *testing.T) {
-	expected1 := AbsoluteZeroF
-	actual1 := CToF(AbsoluteZeroC)
-	if actual1 != expected1 {
-		t.Fatal("Failed conversion F to C")
-	}
+var testsBetweenKelvinAndFahrenheit = []struct {
+	kelvin     Kelvin
+	fahrenheit Fahrenheit
+}{
+	{0, -459.67},
+	{273.15, 32},
+	{373.15, 212},
+}
 
-	expected2 := FreezingF
-	actual2 := CToF(FreezingC)
-	if actual2 != expected2 {
-		t.Fatal("Failed conversion F to C")
-	}
+var tolerance float64 = 0.001
 
-	expected3 := BoilingF
-	actual3 := CToF(BoilingC)
-	if actual3 != expected3 {
-		t.Fatal("Failed conversion F to C")
+var testsBetweenKelvinAndCelsius = []struct {
+	kelvin  Kelvin
+	celsius Celsius
+}{
+	{0, -273.15},
+	{273.15, 0},
+	{373.15, 100},
+}
+
+func TestKToF(t *testing.T) {
+	for _, tt := range testsBetweenKelvinAndFahrenheit {
+		actual := KToF(tt.kelvin)
+		diff := math.Abs(float64(tt.fahrenheit - actual))
+		if diff > tolerance {
+			t.Fatal("Failed conversion K to F")
+		}
 	}
 }
 
-func TestFToC(t *testing.T) {
-	expected1 := AbsoluteZeroC
-	actual1 := FToC(AbsoluteZeroF)
-	if actual1 != expected1 {
-		t.Fatal("Failed conversion C to F")
+func TestFToK(t *testing.T) {
+	for _, tt := range testsBetweenKelvinAndFahrenheit {
+		actual := FToK(tt.fahrenheit)
+		diff := math.Abs(float64(tt.kelvin - actual))
+		if diff > tolerance {
+			t.Fatal("Failed conversion F to K")
+		}
 	}
+}
 
-	expected2 := FreezingC
-	actual2 := FToC(FreezingF)
-	if actual2 != expected2 {
-		t.Fatal("Failed conversion C to F")
+func TestKToC(t *testing.T) {
+	for _, tt := range testsBetweenKelvinAndCelsius {
+		actual := KToC(tt.kelvin)
+		if actual != tt.celsius {
+			t.Fatal("Failed conversion K to C")
+		}
 	}
+}
 
-	expected3 := BoilingC
-	actual3 := FToC(BoilingF)
-	if actual3 != expected3 {
-		t.Fatal("Failed conversion C to F")
+func TestCToK(t *testing.T) {
+	for _, tt := range testsBetweenKelvinAndCelsius {
+		actual := CToK(tt.celsius)
+		if actual != tt.kelvin {
+			t.Fatal("Failed conversion C to K")
+		}
 	}
 }
