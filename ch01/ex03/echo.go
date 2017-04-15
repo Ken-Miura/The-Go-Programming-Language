@@ -2,20 +2,19 @@
 package ex03
 
 import (
-	"fmt"
-	"os"
 	"strings"
 )
 
+var echoTests = []string{"arg0", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8", "arg9"}
+
 func EchoInefficient() {
 	s, sep := "", ""
-	for _, arg := range os.Args[1:] {
+	for _, arg := range echoTests {
 		s += sep + arg
 		sep = " "
 	}
-	fmt.Println(s)
 }
 
 func EchoEfficient() {
-	fmt.Println(strings.Join(os.Args[1:], " "))
+	strings.Join(echoTests, " ")
 }
