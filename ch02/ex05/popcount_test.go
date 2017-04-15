@@ -7,22 +7,20 @@ import (
 )
 
 func TestPopCountUsingLoop(t *testing.T) { // テキストのサンプルコードの関数Popcountと同じ出力をするか確認
-	expected1 := PopCount(0x1234567890ABCDEF)
-	actual1 := PopCountByClearing(0x1234567890ABCDEF)
-	if actual1 != expected1 {
-		t.Fatalf("expected is " + strconv.Itoa(expected1) + " but actual is " + strconv.Itoa(actual1))
+	var popcountTests = []struct {
+		n        uint64 // input
+		expected int    // expected
+	}{
+		{0x1234567890ABCDEF, PopCount(0x1234567890ABCDEF)},
+		{0, PopCount(0)},
+		{1234567890987654321, PopCount(1234567890987654321)},
 	}
 
-	expected2 := PopCount(0)
-	actual2 := PopCountByClearing(0)
-	if actual2 != expected2 {
-		t.Fatalf("expected is " + strconv.Itoa(expected2) + " but actual is " + strconv.Itoa(actual2))
-	}
-
-	expected3 := PopCount(1234567890987654321)
-	actual3 := PopCountByClearing(1234567890987654321)
-	if actual3 != expected3 {
-		t.Fatalf("expected is " + strconv.Itoa(expected3) + " but actual is " + strconv.Itoa(actual3))
+	for _, tt := range popcountTests {
+		actual := PopCountByClearing(tt.n)
+		if actual != tt.expected {
+			t.Fatalf("expected is " + strconv.Itoa(tt.expected) + " but actual is " + strconv.Itoa(actual))
+		}
 	}
 }
 
