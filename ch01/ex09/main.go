@@ -21,8 +21,7 @@ func main() {
 			os.Exit(1)
 		}
 		bytesCopied, err := io.Copy(os.Stdout, resp.Body)
-		fmt.Println()
-		fmt.Println("status code: " + resp.Status)
+		fmt.Fprintf(os.Stderr, "status code: "+resp.Status)
 		resp.Body.Close()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "fetch: reading %s: %v at %d byte(s) copied\n", url, err, bytesCopied)
