@@ -10,7 +10,7 @@ import (
 
 func main() {
 	counts := make(map[string]int)
-	lineToFiles := make(map[string][]string)
+	lineToFiles := make(map[string]map[string]bool) // map[string]boolをsetとして利用
 	files := os.Args[1:]
 	if len(files) == 0 {
 		countLines(os.Stdin, counts, lineToFiles)
@@ -28,22 +28,27 @@ func main() {
 	for line, n := range counts {
 		if n > 1 {
 			fmt.Printf("%d\t%s", n, line)
-			fmt.Println("\tfound in " + strings.Join(lineToFiles[line], ", "))
+			var fileNames []string
+			for fileName := range lineToFiles[line] {
+				fileNames = append(fileNames, fileName)
+			}
+			fmt.Println("\tfound in " + strings.Join(fileNames, ", "))
 		}
 	}
 }
 
-func countLines(f *os.File, counts map[string]int, lineToFiles map[string][]string) {
+func countLines(f *os.File, counts map[string]int, lineToFiles map[string]map[string]bool) {
 	input := bufio.NewScanner(f)
-Counts:
 	for input.Scan() {
 		counts[input.Text()]++
-		for _, file := range lineToFiles[input.Text()] {
-			if file == f.Name() {
-				continue Counts
-			}
+		fileNameSet, ok := lineToFiles[input.Text()]
+		if !ok {
+			fileNameSet = make(map[string]bool)
+			lineToFiles[input.Text()] = fileNameSet
 		}
-		lineToFiles[input.Text()] = append(lineToFiles[input.Text()], f.Name())
+		if !fileNameSet[f.Name()] {
+			fileNameSet[f.Name()] = true
+		}
 	}
 	// NOTE: ignoring potential errors from input.Err()
 }
