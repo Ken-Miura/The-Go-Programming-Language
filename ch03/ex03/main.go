@@ -22,7 +22,7 @@ func main() {
 	max, min := -math.MaxFloat64, math.MaxFloat64
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			z, ok := heightInZAxis(i, j)
+			z, ok := heightAt(i, j)
 			if !ok {
 				continue
 			}
@@ -36,17 +36,19 @@ func main() {
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay, aIsOk, heightOfA := corner(i+1, j)
-			bx, by, bIsOk, heightOfB := corner(i, j)
-			cx, cy, cIsOk, heightOfC := corner(i, j+1)
-			dx, dy, dIsOk, heightOfD := corner(i+1, j+1)
+			ax, ay, aIsOk, heightAtA := corner(i+1, j)
+			bx, by, bIsOk, heightAtB := corner(i, j)
+			cx, cy, cIsOk, heightAtC := corner(i, j+1)
+			dx, dy, dIsOk, heightAtD := corner(i+1, j+1)
 			if !(aIsOk && bIsOk && cIsOk && dIsOk) {
 				continue
 			}
-			if heightOfA == max || heightOfB == max || heightOfC == max || heightOfD == max {
+
+			tolerance := 0.05
+			if (math.Abs(max-heightAtA) < tolerance) || (math.Abs(max-heightAtB) < tolerance) || (math.Abs(max-heightAtC) < tolerance) || (math.Abs(max-heightAtD) < tolerance) {
 				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#ff0000'/>\n",
 					ax, ay, bx, by, cx, cy, dx, dy)
-			} else if heightOfA == min || heightOfB == min || heightOfC == min || heightOfD == min {
+			} else if (math.Abs(min-heightAtA) < tolerance) || (math.Abs(min-heightAtB) < tolerance) || (math.Abs(min-heightAtC) < tolerance) || (math.Abs(min-heightAtD) < tolerance) {
 				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#0000ff'/>\n",
 					ax, ay, bx, by, cx, cy, dx, dy)
 			} else {
@@ -58,7 +60,7 @@ func main() {
 	fmt.Println("</svg>")
 }
 
-func heightInZAxis(i, j int) (float64, bool) {
+func heightAt(i, j int) (float64, bool) {
 	// Find point (x,y) at corner of cell (i,j).
 	x := xyrange * (float64(i)/cells - 0.5)
 	y := xyrange * (float64(j)/cells - 0.5)
