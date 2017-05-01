@@ -18,17 +18,8 @@ const (
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
-var max, min = -math.MaxFloat64, math.MaxFloat64
-
-type heightOfPoint int
-
-const (
-	MAX   heightOfPoint = iota
-	MIN
-	OTHER
-)
-
 func main() {
+	max, min := -math.MaxFloat64, math.MaxFloat64
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
 			z, ok := heightInZAxis(i, j)
@@ -45,17 +36,17 @@ func main() {
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay, aIsOk, placeOfA := corner(i+1, j)
-			bx, by, bIsOk, placeOfB := corner(i, j)
-			cx, cy, cIsOk, placeOfC := corner(i, j+1)
-			dx, dy, dIsOk, placeOfD := corner(i+1, j+1)
+			ax, ay, aIsOk, heightOfA := corner(i+1, j)
+			bx, by, bIsOk, heightOfB := corner(i, j)
+			cx, cy, cIsOk, heightOfC := corner(i, j+1)
+			dx, dy, dIsOk, heightOfD := corner(i+1, j+1)
 			if !(aIsOk && bIsOk && cIsOk && dIsOk) {
 				continue
 			}
-			if placeOfA == MAX || placeOfB == MAX || placeOfC == MAX || placeOfD == MAX {
+			if heightOfA == max || heightOfB == max || heightOfC == max || heightOfD == max {
 				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#ff0000'/>\n",
 					ax, ay, bx, by, cx, cy, dx, dy)
-			} else if placeOfA == MIN || placeOfB == MIN || placeOfC == MIN || placeOfD == MIN {
+			} else if heightOfA == min || heightOfB == min || heightOfC == min || heightOfD == min {
 				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#0000ff'/>\n",
 					ax, ay, bx, by, cx, cy, dx, dy)
 			} else {
@@ -80,7 +71,7 @@ func heightInZAxis(i, j int) (float64, bool) {
 	return z, true
 }
 
-func corner(i, j int) (float64, float64, bool, heightOfPoint) {
+func corner(i, j int) (float64, float64, bool, float64) {
 	// Find point (x,y) at corner of cell (i,j).
 	x := xyrange * (float64(i)/cells - 0.5)
 	y := xyrange * (float64(j)/cells - 0.5)
@@ -88,20 +79,14 @@ func corner(i, j int) (float64, float64, bool, heightOfPoint) {
 	// Compute surface height z.
 	z := f(x, y)
 	if math.IsNaN(z) || math.IsInf(z, 0) {
-		return 0, 0, false, OTHER
+		return 0, 0, false, 0
 	}
 
 	// Project (x,y,z) isometrically onto 2-D SVG canvas (sx,sy).
 	sx := width/2 + (x-y)*cos30*xyscale
 	sy := height/2 + (x+y)*sin30*xyscale - z*zscale
 
-	if z == max {
-		return sx, sy, true, MAX
-	} else if z == min {
-		return sx, sy, true, MIN
-	} else {
-		return sx, sy, true, OTHER
-	}
+	return sx, sy, true, z
 }
 
 func f(x, y float64) float64 {
