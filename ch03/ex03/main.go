@@ -44,17 +44,15 @@ func main() {
 				continue
 			}
 
+			color := "'#ffffff'"
 			tolerance := 0.05
 			if (math.Abs(max-heightAtA) < tolerance) || (math.Abs(max-heightAtB) < tolerance) || (math.Abs(max-heightAtC) < tolerance) || (math.Abs(max-heightAtD) < tolerance) {
-				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#ff0000'/>\n",
-					ax, ay, bx, by, cx, cy, dx, dy)
+				color = "'#0000ff'"
 			} else if (math.Abs(min-heightAtA) < tolerance) || (math.Abs(min-heightAtB) < tolerance) || (math.Abs(min-heightAtC) < tolerance) || (math.Abs(min-heightAtD) < tolerance) {
-				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#0000ff'/>\n",
-					ax, ay, bx, by, cx, cy, dx, dy)
-			} else {
-				fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>\n",
-					ax, ay, bx, by, cx, cy, dx, dy)
+				color = "'#ff0000'"
 			}
+			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill=%s/>\n",
+				ax, ay, bx, by, cx, cy, dx, dy, color)
 		}
 	}
 	fmt.Println("</svg>")
