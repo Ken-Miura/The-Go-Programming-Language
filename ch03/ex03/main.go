@@ -47,9 +47,9 @@ func main() {
 			color := "'#ffffff'"
 			tolerance := 0.05
 			if (math.Abs(max-heightAtA) < tolerance) || (math.Abs(max-heightAtB) < tolerance) || (math.Abs(max-heightAtC) < tolerance) || (math.Abs(max-heightAtD) < tolerance) {
-				color = "'#0000ff'"
-			} else if (math.Abs(min-heightAtA) < tolerance) || (math.Abs(min-heightAtB) < tolerance) || (math.Abs(min-heightAtC) < tolerance) || (math.Abs(min-heightAtD) < tolerance) {
 				color = "'#ff0000'"
+			} else if (math.Abs(min-heightAtA) < tolerance) || (math.Abs(min-heightAtB) < tolerance) || (math.Abs(min-heightAtC) < tolerance) || (math.Abs(min-heightAtD) < tolerance) {
+				color = "'#0000ff'"
 			}
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill=%s/>\n",
 				ax, ay, bx, by, cx, cy, dx, dy, color)
