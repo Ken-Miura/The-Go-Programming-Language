@@ -1,0 +1,1 @@
+go run main.go input.png output.png
