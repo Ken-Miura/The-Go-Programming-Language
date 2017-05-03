@@ -34,11 +34,11 @@ func mandelbrot(z complex128) color.Color {
 	const contrast = 15
 
 	// 発散する（2を超える）速さ毎に色分けするための定数
-	const divergence1 = 1
-	const divergence2 = 2
-	const divergence3 = 3
-	const divergence4 = 4
-	const divergence5 = 5
+	const divergence1 = 2
+	const divergence2 = 3
+	const divergence3 = 4
+	const divergence4 = 5
+	const divergence5 = 6
 
 	var v complex128
 	for n := uint8(0); n < iterations; n++ {
