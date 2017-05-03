@@ -65,7 +65,6 @@ func checkColorStringFormat(color string) bool {
 }
 
 func sinc(out io.Writer, width, height float64, color string) {
-	// FprintfとFprintlnのエラーは確認する必要がないように見えるのでこの関数内では無視する
 	fmt.Fprintf(out, "<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
 		"width='%d' height='%d'>", width, height)
