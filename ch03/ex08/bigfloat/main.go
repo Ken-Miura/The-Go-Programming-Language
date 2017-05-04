@@ -38,7 +38,8 @@ func main() {
 }
 
 func mandelbrot(z *BigComplex) color.Color {
-	const iterations = 10
+	// プログラムが終了しないので繰り返し回数少な目で
+	const iterations = 7
 	const contrast = 15
 
 	two := big.NewFloat(2.0)
