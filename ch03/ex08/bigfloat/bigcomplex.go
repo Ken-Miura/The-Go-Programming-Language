@@ -35,15 +35,35 @@ func Add(a, b *BigComplex) *BigComplex {
 }
 
 func Multiply(a, b *BigComplex) *BigComplex {
+	temp1 := big.NewFloat(0.0)
+	temp1.SetPrec(a.re.Prec())
+	temp1.SetMode(a.re.Mode())
+	temp1.Mul(a.re, b.re)
+
+	temp2 := big.NewFloat(0.0)
+	temp2.SetPrec(a.re.Prec())
+	temp2.SetMode(a.re.Mode())
+	temp2.Mul(a.im, b.im)
+
 	tempRe := big.NewFloat(0.0)
 	tempRe.SetPrec(a.re.Prec())
 	tempRe.SetMode(a.re.Mode())
-	tempRe.Mul(a.re, b.re)
+	tempRe.Sub(temp1, temp2)
+
+	temp3 := big.NewFloat(0.0)
+	temp3.SetPrec(a.im.Prec())
+	temp3.SetMode(a.im.Mode())
+	temp3.Mul(a.re, b.im)
+
+	temp4 := big.NewFloat(0.0)
+	temp4.SetPrec(a.im.Prec())
+	temp4.SetMode(a.im.Mode())
+	temp4.Mul(a.im, b.re)
 
 	tempImag := big.NewFloat(0.0)
 	tempImag.SetPrec(a.im.Prec())
 	tempImag.SetMode(a.im.Mode())
-	tempImag.Mul(a.im, b.im)
+	tempImag.Add(temp3, temp4)
 
 	return &BigComplex{tempRe, tempImag}
 }
