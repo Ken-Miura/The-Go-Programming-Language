@@ -1,5 +1,6 @@
 // Copyright 2017 Ken Mirua
 // コメントと不要な関数を削除した以外はサンプルコードと同じ
+// TODO どこかに色付けする必要がある？
 package main
 
 import (
