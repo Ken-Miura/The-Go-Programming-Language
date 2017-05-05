@@ -11,7 +11,6 @@ import (
 	"runtime"
 )
 
-// TODO bugがありそう
 func main() {
 	const (
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
