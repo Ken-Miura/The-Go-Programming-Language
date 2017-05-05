@@ -9,7 +9,7 @@ import (
 func Comma(s string) string {
 	var buf bytes.Buffer
 	for i := 0; i < len(s); i++ {
-		if i > 2 && i%3 == 0 {
+		if i != 0 && i%3 == 0 {
 			buf.WriteByte(',')
 		}
 		buf.WriteByte(s[len(s)-i-1])
