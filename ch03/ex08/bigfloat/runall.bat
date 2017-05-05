@@ -1,0 +1,1 @@
+go run main.go bigcomplex.go > out.png
