@@ -15,13 +15,13 @@ func NewComplex(re, im *big.Rat) *Complex {
 }
 
 func Add(a, b *Complex) *Complex {
-	tempRe := big.NewRat(0, 1)
-	tempRe.Add(a.re, b.re)
+	realPart := big.NewRat(0, 1)
+	realPart.Add(a.re, b.re)
 
-	tempImag := big.NewRat(0, 1)
-	tempImag.Add(a.im, b.im)
+	imaginaryPart := big.NewRat(0, 1)
+	imaginaryPart.Add(a.im, b.im)
 
-	return &Complex{tempRe, tempImag}
+	return &Complex{realPart, imaginaryPart}
 }
 
 func Multiply(a, b *Complex) *Complex {
@@ -31,8 +31,8 @@ func Multiply(a, b *Complex) *Complex {
 	temp2 := big.NewRat(0, 1)
 	temp2.Mul(a.im, b.im)
 
-	tempRe := big.NewRat(0, 1)
-	tempRe.Sub(temp1, temp2)
+	realPart := big.NewRat(0, 1)
+	realPart.Sub(temp1, temp2)
 
 	temp3 := big.NewRat(0, 1)
 	temp3.Mul(a.re, b.im)
@@ -40,10 +40,10 @@ func Multiply(a, b *Complex) *Complex {
 	temp4 := big.NewRat(0, 1)
 	temp4.Mul(a.im, b.re)
 
-	tempImag := big.NewRat(0, 1)
-	tempImag.Add(temp3, temp4)
+	iamginaryPart := big.NewRat(0, 1)
+	iamginaryPart.Add(temp3, temp4)
 
-	return &Complex{tempRe, tempImag}
+	return &Complex{realPart, iamginaryPart}
 }
 
 func SquaredAbs(bc *Complex) *big.Rat {
