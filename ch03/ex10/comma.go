@@ -16,11 +16,11 @@ func Comma(s string) string {
 	}
 
 	bytesInBuf := buf.Bytes()
-	ret := make([]byte, len(bytesInBuf))
-	i := 0
-	for j := len(bytesInBuf) - 1; j >= 0; j-- {
-		ret[i] = bytesInBuf[j]
+	i, j := 0, len(bytesInBuf)-1
+	for i < j {
+		bytesInBuf[i], bytesInBuf[j] = bytesInBuf[j], bytesInBuf[i]
 		i++
+		j--
 	}
-	return string(ret)
+	return string(bytesInBuf)
 }
