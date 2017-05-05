@@ -9,9 +9,20 @@ import (
 	"math/big"
 	"os"
 	"runtime"
+	"strconv"
 )
 
+var precision uint = 53
+
 func main() {
+
+	if len(os.Args) > 2 {
+		value, err := strconv.ParseUint(os.Args[1], 10, 0)
+		if err != nil && (value > uint64(precision)) {
+			precision = uint(value)
+		}
+	}
+
 	const (
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
 		width, height          = 1024, 1024
@@ -20,12 +31,12 @@ func main() {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
 		y := float64(py)/height*(ymax-ymin) + ymin
-		bigy := big.NewFloat(53)
-		bigy.SetFloat64(y)
+		bigy := big.NewFloat(y)
+		bigy.SetPrec(precision)
 		for px := 0; px < width; px++ {
 			x := float64(px)/width*(xmax-xmin) + xmin
-			bigx := big.NewFloat(53)
-			bigx.SetFloat64(x)
+			bigx := big.NewFloat(x)
+			bigx.SetPrec(precision)
 			z, _ := NewBigComplex(bigx, bigy)
 			// Image point (px, py) represents complex value z.
 			img.Set(px, py, mandelbrot(z))
@@ -43,6 +54,7 @@ func mandelbrot(z *BigComplex) color.Color {
 	const contrast = 15
 
 	two := big.NewFloat(2.0)
+	two.SetPrec(precision)
 
 	v, _ := NewBigComplex(big.NewFloat(0.0), big.NewFloat(0.0))
 	for n := uint8(0); n < iterations; n++ {
