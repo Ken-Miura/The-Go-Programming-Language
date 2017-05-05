@@ -20,13 +20,13 @@ func main() {
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
-		//y := float64(py)/height*(ymax-ymin) + ymin
+		y := float64(py)/height*(ymax-ymin) + ymin
 		raty := big.NewRat(0, 1)
-		raty.Add(big.NewRat(int64(py), height*(ymax-ymin)), big.NewRat(ymin, 1))
+		raty.SetFloat64(y)
 		for px := 0; px < width; px++ {
-			//x := float64(px)/width*(xmax-xmin) + xmin
+			x := float64(px)/width*(xmax-xmin) + xmin
 			ratx := big.NewRat(0, 1)
-			ratx.Add(big.NewRat(int64(px), height*(xmax-xmin)), big.NewRat(xmin, 1))
+			ratx.SetFloat64(x)
 			z := NewComplex(ratx, raty)
 			// Image point (px, py) represents complex value z.
 			img.Set(px, py, mandelbrot(z))
