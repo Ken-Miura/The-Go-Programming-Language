@@ -26,11 +26,11 @@ func main() {
 	}
 
 	if *algorithm == "sha256" {
-		fmt.Printf("%x", sha256.Sum256([]byte(args[0])))
+		fmt.Printf("%x\n", sha256.Sum256([]byte(args[0])))
 	} else if *algorithm == "sha384" {
-		fmt.Printf("%x", sha512.Sum384([]byte(args[0])))
+		fmt.Printf("%x\n", sha512.Sum384([]byte(args[0])))
 	} else if *algorithm == "sha512" {
-		fmt.Printf("%x", sha512.Sum512([]byte(args[0])))
+		fmt.Printf("%x\n", sha512.Sum512([]byte(args[0])))
 	} else {
 		panic("This line must not be reached.\n")
 	}
