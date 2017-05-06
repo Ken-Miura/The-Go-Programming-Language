@@ -26,11 +26,8 @@ func commaToSignedInteger(s string) string {
 	}
 
 	bytesInBuf := buf.Bytes()
-	i, j := 0, len(bytesInBuf)-1
-	for i < j {
+	for i, j := 0, len(bytesInBuf)-1; i < j; i, j = i+1, j-1 {
 		bytesInBuf[i], bytesInBuf[j] = bytesInBuf[j], bytesInBuf[i]
-		i++
-		j--
 	}
 	return string(bytesInBuf)
 }
