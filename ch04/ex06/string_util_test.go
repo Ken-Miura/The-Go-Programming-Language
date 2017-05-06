@@ -14,6 +14,7 @@ var tests = []struct {
 	{[]byte("a　b"), []byte("a b")},
 	{[]byte("a\u200A b"), []byte("a b")},
 	{[]byte("abc"), []byte("abc")},
+	{[]byte("　 abc   　"), []byte(" abc ")},
 }
 
 func TestCompressSpaces(t *testing.T) {
