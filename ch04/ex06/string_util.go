@@ -7,7 +7,7 @@ import (
 
 func CompressSpaces(s []byte) []byte {
 	runes := []rune(string(s))
-	runes = repalaceSpacesToAsciiSpase(runes)
+	runes = replaceSpacesToAsciiSpase(runes)
 	for i := 0; i < len(runes)-1; {
 		if unicode.IsSpace(runes[i]) && unicode.IsSpace(runes[i+1]) {
 			runes = remove(runes, i+1)
@@ -18,7 +18,7 @@ func CompressSpaces(s []byte) []byte {
 	return []byte(string(runes))
 }
 
-func repalaceSpacesToAsciiSpase(runes []rune) []rune {
+func replaceSpacesToAsciiSpase(runes []rune) []rune {
 	for i := range runes {
 		if unicode.IsSpace(runes[i]) && runes[i] != ' ' {
 			runes[i] = ' '
