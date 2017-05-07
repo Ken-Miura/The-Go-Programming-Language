@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// TODO split functionを自作して正規表現 ([\\P{L}]+とか) でトークンを分ければもっときれいに単語の切り分けできそう？
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("usage: " + os.Args[0] + " 'text file in which you want to count words'")
