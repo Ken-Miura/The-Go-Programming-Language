@@ -15,6 +15,7 @@ const gitHubAPIRoot = "https://api.github.com/repos"
 
 var operation = flag.String("o", "list", "issue operation for the repository: list, create, edit or close")
 
+// TODO エディタ連携 エディタを起動した後にそのエディタに入力された文字列はどうやって取得すればよい？？？
 func main() {
 	flag.Parse()
 	args := flag.Args()
