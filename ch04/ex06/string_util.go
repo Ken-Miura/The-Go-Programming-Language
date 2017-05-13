@@ -14,11 +14,11 @@ func CompressSpaces(s []byte) []byte {
 		}
 		i++
 	}
-	runes = replaceSpacesToAsciiSpase(runes)
+	runes = replaceSpacesToAsciiSpace(runes)
 	return []byte(string(runes))
 }
 
-func replaceSpacesToAsciiSpase(runes []rune) []rune {
+func replaceSpacesToAsciiSpace(runes []rune) []rune {
 	for i := range runes {
 		if unicode.IsSpace(runes[i]) && runes[i] != ' ' {
 			runes[i] = ' '
