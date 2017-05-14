@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-const APIRoot = "http://www.omdbapi.com/?t="
+const OMDBAPIRoot = "http://www.omdbapi.com/?t="
 
 func main() {
 	if len(os.Args) != 2 {
@@ -20,15 +20,15 @@ func main() {
 	}
 
 	q := url.QueryEscape(os.Args[1])
-	resp1, err := http.Get(APIRoot + q)
+	jsonResp, err := http.Get(OMDBAPIRoot + q)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
-	defer resp1.Body.Close()
+	defer jsonResp.Body.Close()
 
 	var info movieInfo
-	if err := json.NewDecoder(resp1.Body).Decode(&info); err != nil {
+	if err := json.NewDecoder(jsonResp.Body).Decode(&info); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to decode response as json. error: %v\n", err)
 		return
 	}
@@ -38,13 +38,13 @@ func main() {
 		return
 	}
 
-	resp2, err := http.Get(info.Poster)
+	posterResp, err := http.Get(info.Poster)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
-	defer resp2.Body.Close()
-	io.Copy(os.Stdout, resp2.Body)
+	defer posterResp.Body.Close()
+	io.Copy(os.Stdout, posterResp.Body)
 }
 
 type movieInfo struct {
