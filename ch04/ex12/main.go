@@ -41,20 +41,20 @@ func main() {
 		f, err := os.Open("index.json")
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("Index file to search comic might not exist.")
+			fmt.Println("ComicInfo file to search comic might not exist.")
 			fmt.Println("Please create index file at first.")
 			fmt.Println("how to create: " + programName + " -o create")
 			return
 		}
-		var indexes []Index
-		ok := constructIndex(f, &indexes)
+		var index []ComicInfo
+		ok := constructIndex(f, &index)
 		if !ok {
 			fmt.Println("failed to construct index")
 			fmt.Println("Please re-create index file.")
 			fmt.Println("how to create: " + programName + " -o create")
 			return
 		}
-		search(indexes, args[0])
+		search(index, args[0])
 	} else {
 		panic("This line must not be reached.\n")
 	}
@@ -68,48 +68,48 @@ func createIndex() {
 	}
 	defer f.Close()
 
-	var indexes []Index
+	var index []ComicInfo
 	var ok bool = true
 	for i := 1; ok; i++ {
 		if i == 404 { // this numbering results in Not Found
 			continue
 		}
-		var index Index
-		index, ok = requestIndex(fmt.Sprintf(xkcdAPIRoot, i))
+		var comicInfo ComicInfo
+		comicInfo, ok = requestComicInfo(fmt.Sprintf(xkcdAPIRoot, i))
 		if ok {
-			indexes = append(indexes, index)
+			index = append(index, comicInfo)
 		}
 	}
 
-	if err := json.NewEncoder(f).Encode(indexes); err != nil {
+	if err := json.NewEncoder(f).Encode(index); err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println("succeeded in creating index")
 }
 
-func requestIndex(url string) (Index, bool) {
+func requestComicInfo(url string) (ComicInfo, bool) {
 	fmt.Printf("fetching from: %s\n", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
-		return Index{}, false
+		return ComicInfo{}, false
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return Index{}, false
+		return ComicInfo{}, false
 	}
 
-	var index Index
-	if err := json.NewDecoder(resp.Body).Decode(&index); err != nil {
+	var comicInfo ComicInfo
+	if err := json.NewDecoder(resp.Body).Decode(&comicInfo); err != nil {
 		fmt.Println(err)
-		return Index{}, false
+		return ComicInfo{}, false
 	}
-	return index, true
+	return comicInfo, true
 }
 
-func constructIndex(r io.Reader, indexes *[]Index) bool {
+func constructIndex(r io.Reader, indexes *[]ComicInfo) bool {
 	if err := json.NewDecoder(r).Decode(&indexes); err != nil {
 		fmt.Println(err)
 		return false
@@ -117,19 +117,19 @@ func constructIndex(r io.Reader, indexes *[]Index) bool {
 	return true
 }
 
-func search(indexes []Index, word string) {
-	for _, index := range indexes {
-		if strings.Contains(index.Title, word) || strings.Contains(index.Transcript, word) {
-			fmt.Printf("title: %s\n", index.Title)
-			fmt.Printf("URL: %s\n", fmt.Sprintf(xkcdURL, index.Num))
-			fmt.Printf("transcript:\n%s\n", index.Transcript)
+func search(index []ComicInfo, word string) {
+	for _, comicInfo := range index {
+		if strings.Contains(comicInfo.Title, word) || strings.Contains(comicInfo.Transcript, word) {
+			fmt.Printf("title: %s\n", comicInfo.Title)
+			fmt.Printf("URL: %s\n", fmt.Sprintf(xkcdURL, comicInfo.Num))
+			fmt.Printf("transcript:\n%s\n", comicInfo.Transcript)
 			return
 		}
 	}
-	fmt.Printf("Not found %s in index\n", word)
+	fmt.Printf("Not found %s in comicInfo\n", word)
 }
 
-type Index struct {
+type ComicInfo struct {
 	Num        int    `json:"num"`
 	Title      string `json:"title"`
 	Transcript string `json:"transcript"`
