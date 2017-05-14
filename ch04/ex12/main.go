@@ -14,7 +14,10 @@ import (
 const xkcdURL = "https://xkcd.com/%d"
 const xkcdAPIRoot = xkcdURL + "/info.0.json"
 
-var operation = flag.String("o", "search", "operations for xkcd: create or search")
+var operation = flag.String("o", "search",
+	`operations for xkcd
+	'create' creates index by fetching data from "https://xkcd.com/'number'/info.0.json"
+	'search' searches comic including specified word in database`)
 
 func main() {
 	flag.Parse()
@@ -43,7 +46,7 @@ func main() {
 			fmt.Println("how to create: " + programName + " -o create")
 			return
 		}
-		var indexes []comicIndex
+		var indexes []Index
 		ok := constructIndex(f, &indexes)
 		if !ok {
 			fmt.Println("failed to construct index")
@@ -51,7 +54,7 @@ func main() {
 			fmt.Println("how to create: " + programName + " -o create")
 			return
 		}
-		searchComic(indexes, args[0])
+		search(indexes, args[0])
 	} else {
 		panic("This line must not be reached.\n")
 	}
@@ -65,13 +68,13 @@ func createIndex() {
 	}
 	defer f.Close()
 
-	var indexes []comicIndex
+	var indexes []Index
 	var ok bool = true
 	for i := 1; ok; i++ {
 		if i == 404 { // this numbering results in Not Found
 			continue
 		}
-		var index comicIndex
+		var index Index
 		index, ok = requestIndex(fmt.Sprintf(xkcdAPIRoot, i))
 		if ok {
 			indexes = append(indexes, index)
@@ -85,28 +88,28 @@ func createIndex() {
 	fmt.Println("succeeded in creating index")
 }
 
-func requestIndex(url string) (comicIndex, bool) {
+func requestIndex(url string) (Index, bool) {
 	fmt.Printf("fetching from: %s\n", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
-		return comicIndex{}, false
+		return Index{}, false
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return comicIndex{}, false
+		return Index{}, false
 	}
 
-	var index comicIndex
+	var index Index
 	if err := json.NewDecoder(resp.Body).Decode(&index); err != nil {
 		fmt.Println(err)
-		return comicIndex{}, false
+		return Index{}, false
 	}
 	return index, true
 }
 
-func constructIndex(r io.Reader, indexes *[]comicIndex) bool {
+func constructIndex(r io.Reader, indexes *[]Index) bool {
 	if err := json.NewDecoder(r).Decode(&indexes); err != nil {
 		fmt.Println(err)
 		return false
@@ -114,7 +117,7 @@ func constructIndex(r io.Reader, indexes *[]comicIndex) bool {
 	return true
 }
 
-func searchComic(indexes []comicIndex, word string) {
+func search(indexes []Index, word string) {
 	for _, index := range indexes {
 		if strings.Contains(index.Title, word) || strings.Contains(index.Transcript, word) {
 			fmt.Printf("title: %s\n", index.Title)
@@ -126,7 +129,7 @@ func searchComic(indexes []comicIndex, word string) {
 	fmt.Printf("Not found %s in index\n", word)
 }
 
-type comicIndex struct {
+type Index struct {
 	Num        int    `json:"num"`
 	Title      string `json:"title"`
 	Transcript string `json:"transcript"`
