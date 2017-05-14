@@ -17,7 +17,7 @@ const xkcdAPIRoot = xkcdURL + "/info.0.json"
 var operation = flag.String("o", "search",
 	`operations for xkcd
 	'create' creates index by fetching data from "https://xkcd.com/'number'/info.0.json"
-	'search' searches comic including specified word in database`)
+	'search' searches comic including specified word`)
 
 func main() {
 	flag.Parse()
