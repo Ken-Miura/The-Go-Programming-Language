@@ -1,0 +1,1 @@
+go run main.go "The Lord of the Rings: The Fellowship of the Ring" > poster.jpg
