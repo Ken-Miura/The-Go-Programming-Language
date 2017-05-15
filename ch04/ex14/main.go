@@ -57,6 +57,12 @@ func main() {
 				repository = v[0]
 			}
 		}
+		if owner == "" || repository == "" {
+			fmt.Fprintln(w, `This server displays bugs in specified owner's repository.
+			usage: http://(host info)/?owner="owner's name"&repository="repository where you want to see bugs"
+			ex. http://localhost:8080/?owner=Ken-Miura&repository=GitHub-API-Practice`)
+			return
+		}
 		reportBug(w, owner, repository)
 	}
 	http.HandleFunc("/", handler)
