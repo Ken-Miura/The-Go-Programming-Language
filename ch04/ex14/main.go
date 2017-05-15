@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -44,25 +44,41 @@ func hasMilestone(milestone *Milestone) *Milestone {
 }
 
 func main() {
-	reportBug(os.Stdout, "Ken-Miura", "GitHub-API-Practice")
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			log.Print(err)
+		}
+
+		var owner, repository string
+		for k, v := range r.Form {
+			if k == "owner" {
+				owner = v[0]
+			} else if k == "repository" {
+				repository = v[0]
+			}
+		}
+		reportBug(w, owner, repository)
+	}
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe("localhost:8080", nil))
 }
 
 func reportBug(out io.Writer, owner, repository string) {
 	resp, err := http.Get(gitHubAPIRoot + "/" + owner + "/" + repository + "/issues")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(out, err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("failed to request. status code: %v\n", resp.StatusCode)
+		fmt.Fprintf(out, "failed to request. status code: %v\n", resp.StatusCode)
 		return
 	}
 
 	var issues []Issue
 	if err := json.NewDecoder(resp.Body).Decode(&issues); err != nil {
-		fmt.Printf("failed to decode response body as json. error: %v\n", err)
+		fmt.Fprintf(out, "failed to decode response body as json. error: %v\n", err)
 		return
 	}
 
@@ -80,7 +96,7 @@ NextIssue:
 	}
 	bugs := BugList{bugCount, bugIssues}
 	if err := bugReport.Execute(out, bugs); err != nil {
-		fmt.Printf("failed to write bug report to response body. error: %v\n", err)
+		fmt.Fprintf(out, "failed to write bug report to specified output stream. error: %v\n", err)
 		return
 	}
 }
