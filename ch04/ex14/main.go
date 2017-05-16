@@ -13,7 +13,7 @@ import (
 
 const gitHubAPIRoot = "https://api.github.com/repos"
 
-var bugReport = template.Must(template.New("bugReport").Funcs(template.FuncMap{"hasMilestone": hasMilestone}).Parse(`
+var bugReport = template.Must(template.New("bugReport").Funcs(template.FuncMap{"fillMilestoneIfNeeded": fillMilestoneIfNeeded}).Parse(`
 <h1>{{.TotalCount}} bugs</h1>
 <table>
 <tr style='text-align: left'>
@@ -29,18 +29,18 @@ var bugReport = template.Must(template.New("bugReport").Funcs(template.FuncMap{"
   <td>{{.State}}</td>
   <td><a href='{{.User.HTMLURL}}'>{{.User.Login}}</a></td>
   <td><a href='{{.HTMLURL}}'>{{.Title}}</a></td>
-  <td><a href='{{(.Milestone|hasMilestone).HTMLURL}}'>{{(.Milestone|hasMilestone).Title}}</a></td>
+  <td><a href='{{(.Milestone|fillMilestoneIfNeeded).HTMLURL}}'>{{(.Milestone|fillMilestoneIfNeeded).Title}}</a></td>
 </tr>
 {{end}}
 </table>
 `))
 
-func hasMilestone(milestone *Milestone) *Milestone {
+func fillMilestoneIfNeeded(milestone *Milestone) *Milestone {
 	if milestone == nil {
 		return &Milestone{"no associated milestone", ""}
-	} else {
-		return milestone
 	}
+	return milestone
+
 }
 
 func main() {
