@@ -13,8 +13,11 @@ import (
 
 const gitHubAPIRoot = "https://api.github.com/repos"
 
-var bugReport = template.Must(template.New("bugReport").Funcs(template.FuncMap{"fillMilestoneIfNeeded": fillMilestoneIfNeeded}).Parse(`
-<h1>{{.TotalCount}} bugs</h1>
+var bugReport = template.Must(template.New("bugReport").
+	Funcs(template.FuncMap{"totalCount": totalCount}).
+	Funcs(template.FuncMap{"fillMilestoneIfNeeded": fillMilestoneIfNeeded}).
+	Parse(`
+<h1>{{.Items|totalCount}} bugs</h1>
 <table>
 <tr style='text-align: left'>
   <th>#</th>
@@ -35,12 +38,15 @@ var bugReport = template.Must(template.New("bugReport").Funcs(template.FuncMap{"
 </table>
 `))
 
+func totalCount(items []Issue) int {
+	return len(items)
+}
+
 func fillMilestoneIfNeeded(milestone *Milestone) *Milestone {
 	if milestone == nil {
 		return &Milestone{"no associated milestone", ""}
 	}
 	return milestone
-
 }
 
 func main() {
@@ -88,19 +94,17 @@ func reportBug(out io.Writer, owner, repository string) {
 		return
 	}
 
-	bugCount := 0
 	bugIssues := make([]Issue, 0)
 NextIssue:
 	for _, issue := range issues {
 		for _, label := range *issue.Labels {
 			if label.Name == "bug" {
 				bugIssues = append(bugIssues, issue)
-				bugCount++
 				continue NextIssue
 			}
 		}
 	}
-	bugs := BugList{bugCount, bugIssues}
+	bugs := BugList{bugIssues}
 	if err := bugReport.Execute(out, bugs); err != nil {
 		fmt.Fprintf(out, "failed to write bug report to specified output stream. error: %v\n", err)
 		return
@@ -108,8 +112,7 @@ NextIssue:
 }
 
 type BugList struct {
-	TotalCount int
-	Items      []Issue
+	Items []Issue
 }
 
 type Issue struct {
@@ -124,6 +127,11 @@ type Issue struct {
 	Body      string    // in Markdown format
 }
 
+type Milestone struct {
+	Title   string
+	HTMLURL string `json:"html_url"`
+}
+
 type User struct {
 	Login   string
 	HTMLURL string `json:"html_url"`
@@ -131,9 +139,4 @@ type User struct {
 
 type Label struct {
 	Name string
-}
-
-type Milestone struct {
-	Title   string
-	HTMLURL string `json:"html_url"`
 }
