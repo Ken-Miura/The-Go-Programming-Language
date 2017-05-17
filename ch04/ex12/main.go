@@ -41,7 +41,7 @@ func main() {
 		f, err := os.Open("index.json")
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("ComicInfo file to search comic might not exist.")
+			fmt.Println("index file to search comic might not exist.")
 			fmt.Println("Please create index file at first.")
 			fmt.Println("how to create: " + programName + " -o create")
 			return
