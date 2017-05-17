@@ -126,7 +126,7 @@ func search(index []ComicInfo, word string) {
 			return
 		}
 	}
-	fmt.Printf("Not found %s in comicInfo\n", word)
+	fmt.Printf("Not found %s in index\n", word)
 }
 
 type ComicInfo struct {
