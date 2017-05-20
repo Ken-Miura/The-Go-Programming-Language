@@ -20,6 +20,9 @@ var tests = []struct {
 func TestCompressSpaces(t *testing.T) {
 	for _, tt := range tests {
 		actual := CompressSpaces(tt.input)
+		if len(actual) != len(tt.expected) {
+			t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
+		}
 		for i := range tt.expected {
 			if actual[i] != tt.expected[i] {
 				t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
