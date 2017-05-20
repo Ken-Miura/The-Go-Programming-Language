@@ -26,7 +26,7 @@ func main() {
 			log.Print(err)
 		}
 		x0, y0 := 0.0, 0.0
-		var scale int64 = 1
+		var scale float64 = 1
 		for k, v := range r.Form {
 			var err error
 			if k == "x" {
@@ -40,7 +40,7 @@ func main() {
 					fmt.Fprintf(os.Stderr, "parsing variable y: %v\n", err)
 				}
 			} else if k == "scale" {
-				scale, err = strconv.ParseInt(v[0], 10, 0)
+				scale, err = strconv.ParseFloat(v[0], 64)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "parsing variable scale: %v\n", err)
 				}
@@ -56,19 +56,19 @@ func main() {
 		if scale < 1 {
 			scale = 1
 		}
-		fractal(w, x0, y0, int(scale))
+		fractal(w, x0, y0, scale)
 	}
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
-func fractal(out io.Writer, x0, y0 float64, magnification int) {
+func fractal(out io.Writer, x0, y0 float64, scale float64) {
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
-		y := (float64(py)/height*(ymax-ymin) + ymin) / float64(magnification)
+		y := (float64(py)/height*(ymax-ymin) + ymin) / scale
 		for px := 0; px < width; px++ {
-			x := (float64(px)/width*(xmax-xmin) + xmin) / float64(magnification)
+			x := (float64(px)/width*(xmax-xmin) + xmin) / scale
 			z := complex(x-x0, y-y0)
 			// Image point (px, py) represents complex value z.
 			img.Set(px, py, mandelbrot(z))
