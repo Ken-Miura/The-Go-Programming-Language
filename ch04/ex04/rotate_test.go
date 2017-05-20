@@ -16,6 +16,9 @@ var tests = []struct {
 func TestRotate(t *testing.T) {
 	for _, tt := range tests {
 		actual := Rotate(tt.input1, tt.input2)
+		if len(actual) != len(tt.expected) {
+			t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
+		}
 		for i := range tt.expected {
 			if actual[i] != tt.expected[i] {
 				t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
