@@ -22,12 +22,15 @@ func main() {
 	max, min := -math.MaxFloat64, math.MaxFloat64
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			z, ok := heightAt(i, j)
-			if !ok {
+			z1, ok1 := heightAt(i+1, j)
+			z2, ok2 := heightAt(i, j)
+			z3, ok3 := heightAt(i, j+1)
+			z4, ok4 := heightAt(i+1, j+1)
+			if !(ok1 && ok2 && ok3 && ok4) {
 				continue
 			}
-			min = math.Min(z, min)
-			max = math.Max(z, max)
+			min = math.Min((z1+z2+z3+z4)/4, min)
+			max = math.Max((z1+z2+z3+z4)/4, max)
 		}
 	}
 
@@ -44,18 +47,18 @@ func main() {
 				continue
 			}
 
-			color := "'#ffffff'"
-			tolerance := 0.05
-			if (math.Abs(max-heightAtA) < tolerance) || (math.Abs(max-heightAtB) < tolerance) || (math.Abs(max-heightAtC) < tolerance) || (math.Abs(max-heightAtD) < tolerance) {
-				color = "'#ff0000'"
-			} else if (math.Abs(min-heightAtA) < tolerance) || (math.Abs(min-heightAtB) < tolerance) || (math.Abs(min-heightAtC) < tolerance) || (math.Abs(min-heightAtD) < tolerance) {
-				color = "'#0000ff'"
-			}
+			averageHeight := (heightAtA + heightAtB + heightAtC + heightAtD) / 4
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill=%s/>\n",
-				ax, ay, bx, by, cx, cy, dx, dy, color)
+				ax, ay, bx, by, cx, cy, dx, dy, colorFormatStringBasedOnHeight(averageHeight, max, min))
 		}
 	}
 	fmt.Println("</svg>")
+}
+
+func colorFormatStringBasedOnHeight(height, max, min float64) string {
+	width := math.Abs(max - min)
+	factor := int(math.Abs(height-min) * 255 / width)
+	return fmt.Sprintf("'#%02x00%02x'", factor, 255-factor)
 }
 
 func heightAt(i, j int) (float64, bool) {
