@@ -26,7 +26,7 @@ func main() {
 			log.Print(err)
 		}
 		x0, y0 := 0.0, 0.0
-		var magnification int64 = 1
+		var scale int64 = 1
 		for k, v := range r.Form {
 			var err error
 			if k == "x" {
@@ -39,10 +39,10 @@ func main() {
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "parsing variable y: %v\n", err)
 				}
-			} else if k == "magnification" {
-				magnification, err = strconv.ParseInt(v[0], 10, 0)
+			} else if k == "scale" {
+				scale, err = strconv.ParseInt(v[0], 10, 0)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "parsing variable magnification: %v\n", err)
+					fmt.Fprintf(os.Stderr, "parsing variable scale: %v\n", err)
 				}
 			}
 		}
@@ -53,10 +53,10 @@ func main() {
 		if math.IsNaN(y0) || math.IsInf(y0, 0) || y0 < ymin || y0 > ymax {
 			y0 = 0.0
 		}
-		if magnification < 1 {
-			magnification = 1
+		if scale < 1 {
+			scale = 1
 		}
-		fractal(w, x0, y0, int(magnification))
+		fractal(w, x0, y0, int(scale))
 	}
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
