@@ -1,6 +1,4 @@
 // Copyright 2017 Ken Mirua
-// コメントと不要な関数を削除した以外はサンプルコードと同じ
-// TODO どこかに色付けする必要がある？
 package main
 
 import (
@@ -41,7 +39,11 @@ func newton(z complex128) color.Color {
 	for i := uint8(0); i < iterations; i++ {
 		z -= (z - 1/(z*z*z)) / 4
 		if cmplx.Abs(z*z*z*z-1) < 1e-6 {
-			return color.Gray{255 - contrast*i}
+			return color.RGBA{255 - contrast*i, 0, 0, 255}
+		} else if cmplx.Abs(z*z*z*z-1) < 1e-5 {
+			return color.RGBA{0, 255 - contrast*i, 0, 255}
+		} else if cmplx.Abs(z*z*z*z-1) < 1e-4 {
+			return color.RGBA{0, 0, 255 - contrast*i, 255}
 		}
 	}
 	return color.Black
