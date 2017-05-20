@@ -14,6 +14,9 @@ var tests = []struct {
 func TestReverse(t *testing.T) {
 	for _, tt := range tests {
 		actual := Reverse(tt.input)
+		if len(actual) != len(tt.expected) {
+			t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
+		}
 		for i := range tt.expected {
 			if actual[i] != tt.expected[i] {
 				t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
