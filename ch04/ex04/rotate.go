@@ -1,6 +1,7 @@
 // Copyright 2017 Ken Mirua
 package ex04
 
+// TODO もとのスライスを返さないといけない＋ワンパスで処理をしないといけない
 func Rotate(s []int, n int) []int {
 	result := make([]int, len(s))
 	if n < 0 {
