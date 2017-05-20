@@ -46,15 +46,18 @@ func main() {
 				}
 			}
 		}
-		// パースが失敗したり、異常値をパラメータとして渡されたり、パラメータを何も渡されなかったりしたときは下記の値に設定
+
 		if math.IsNaN(x0) || math.IsInf(x0, 0) || x0 < xmin || x0 > xmax {
-			x0 = 0.0
+			fmt.Fprintf(w, "x must be %d <= x <= %d\n", xmin, xmax)
+			return
 		}
 		if math.IsNaN(y0) || math.IsInf(y0, 0) || y0 < ymin || y0 > ymax {
-			y0 = 0.0
+			fmt.Fprintf(w, "y must be %d <= y <= %d\n", ymin, ymax)
+			return
 		}
-		if scale < 1 {
-			scale = 1
+		if scale <= 0 {
+			fmt.Fprintln(w, "scale must be more than 0")
+			return
 		}
 		fractal(w, x0, y0, scale)
 	}
