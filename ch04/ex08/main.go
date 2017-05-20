@@ -72,10 +72,12 @@ func main() {
 	if invalid > 0 {
 		fmt.Printf("\n%d invalid UTF-8 characters\n", invalid)
 	}
-	fmt.Print("\nletter\tcount\n")
-	fmt.Printf("letter\t%d\n", letterClassification[letter])
+
+	fmt.Print("\nletter\t\tcount\n")
+	fmt.Printf("letter\t\t%d\n", letterClassification[letter])
 	fmt.Printf("not letter\t%d\n", letterClassification[notLetter])
-	fmt.Print("\nnumber\tcount\n")
-	fmt.Printf("number\t%d\n", numberClassification[number])
+
+	fmt.Print("\nnumber\t\tcount\n")
+	fmt.Printf("number\t\t%d\n", numberClassification[number])
 	fmt.Printf("not number\t%d\n", numberClassification[notNumber])
 }
