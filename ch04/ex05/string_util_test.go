@@ -18,9 +18,12 @@ var tests = []struct {
 func TestRemoveAdjacentDuplication(t *testing.T) {
 	for _, tt := range tests {
 		actual := RemoveAdjacentDuplication(tt.input)
+		if len(actual) != len(tt.expected) {
+			t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
+		}
 		for i := range tt.expected {
 			if actual[i] != tt.expected[i] {
-				t.Fatalf("expected is %s, but actual is %s", tt.expected, actual)
+				t.Fatalf("expected is %v, but actual is %v", tt.expected, actual)
 			}
 		}
 	}
