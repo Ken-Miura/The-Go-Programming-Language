@@ -20,10 +20,6 @@ func main() {
 	}
 }
 
-//!-main
-
-//!+visit
-// visit appends to links each link found in n and returns the result.
 func visit(links []string, n *html.Node) []string {
 	if n == nil {
 		return links
@@ -37,35 +33,3 @@ func visit(links []string, n *html.Node) []string {
 	}
 	return visit(visit(links, n.FirstChild), n.NextSibling)
 }
-
-//!-visit
-
-/*
-//!+html
-package html
-
-type Node struct {
-	Type                    NodeType
-	Data                    string
-	Attr                    []Attribute
-	FirstChild, NextSibling *Node
-}
-
-type NodeType int32
-
-const (
-	ErrorNode NodeType = iota
-	TextNode
-	DocumentNode
-	ElementNode
-	CommentNode
-	DoctypeNode
-)
-
-type Attribute struct {
-	Key, Val string
-}
-
-func Parse(r io.Reader) (*Node, error)
-//!-html
-*/
