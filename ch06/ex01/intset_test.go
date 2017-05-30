@@ -19,7 +19,7 @@ func TestIntSet_Len(t *testing.T) {
 	for _, test := range tests {
 		actual := test.receiver.Len()
 		if actual != test.expected {
-			t.Fatalf("(*IntSet).Len() failed: input is %d but actual is %d", test.expected, actual)
+			t.Fatalf("(*IntSet).Len() failed: expected is %d but actual is %d", test.expected, actual)
 		}
 	}
 }
