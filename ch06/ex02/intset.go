@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Mirua
-package ex01
+package ex02
 
 import (
 	"bytes"
