@@ -14,10 +14,9 @@ import (
 var out io.Writer = os.Stdout
 
 func main() {
-	outline("https://golang.org")
-	//for _, url := range os.Args[1:] {
-	//	outline(url)
-	//}
+	for _, url := range os.Args[1:] {
+		outline(url)
+	}
 }
 
 func outline(url string) error {
@@ -55,7 +54,11 @@ var depth int
 
 func startElement(n *html.Node) {
 	if n.Type == html.ElementNode {
-		fmt.Fprintf(out, "%*s<%s%s>\n", depth*2, "", n.Data, attributes(n))
+		if n.FirstChild == nil {
+			fmt.Fprintf(out, "%*s<%s%s/>\n", depth*2, "", n.Data, attributes(n))
+		} else {
+			fmt.Fprintf(out, "%*s<%s%s>\n", depth*2, "", n.Data, attributes(n))
+		}
 		if n.FirstChild != nil && n.FirstChild.Type == html.TextNode {
 			textData := strings.TrimSpace(n.FirstChild.Data)
 			if textData != "" {
