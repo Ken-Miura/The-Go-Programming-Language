@@ -11,15 +11,13 @@ import (
 	"strings"
 )
 
-var out io.Writer = os.Stdout
-
 func main() {
 	for _, url := range os.Args[1:] {
-		outline(url)
+		outline(os.Stdout, url)
 	}
 }
 
-func outline(url string) error {
+func outline(out io.Writer, url string) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -31,28 +29,28 @@ func outline(url string) error {
 		return err
 	}
 
-	forEachNode(doc, startElement, endElement)
+	forEachNode(out, doc, startElement, endElement)
 
 	return nil
 }
 
-func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
+func forEachNode(out io.Writer, n *html.Node, pre, post func(out io.Writer, n *html.Node)) {
 	if pre != nil {
-		pre(n)
+		pre(out, n)
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		forEachNode(c, pre, post)
+		forEachNode(out, c, pre, post)
 	}
 
 	if post != nil {
-		post(n)
+		post(out, n)
 	}
 }
 
 var depth int
 
-func startElement(n *html.Node) {
+func startElement(out io.Writer, n *html.Node) {
 	if n.Type == html.ElementNode {
 		if n.FirstChild == nil {
 			fmt.Fprintf(out, "%*s<%s%s/>\n", depth*2, "", n.Data, attributes(n))
@@ -80,7 +78,7 @@ func attributes(n *html.Node) string {
 	return s
 }
 
-func endElement(n *html.Node) {
+func endElement(out io.Writer, n *html.Node) {
 	if n.Type == html.ElementNode {
 		depth--
 		if n.FirstChild == nil {
