@@ -1,0 +1,3 @@
+CelsiusFlag関数内でCelsius型として渡された引数が、celsiusFlag型に包まれている。
+デフォルト値表示の際は、celsiusFlag型のStringメソッドでの文字列が利用される。
+celsiusFlag型のStringメソッドによりCelsius型のStringメソッドが呼ばれるため、"20.0"ではなく"20.0°C"として表示される。
