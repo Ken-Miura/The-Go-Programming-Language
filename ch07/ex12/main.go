@@ -32,9 +32,6 @@ type database struct {
 func (db database) list(w http.ResponseWriter, req *http.Request) {
 	db.Lock()
 	defer db.Unlock()
-	//for item, price := range db.Mapping {
-	//	fmt.Fprintf(w, "%s: %s\n", item, price)
-	//}
 	if err := itemList.Execute(w, db); err != nil {
 		log.Fatal(err)
 	}
