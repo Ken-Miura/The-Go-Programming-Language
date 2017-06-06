@@ -2,7 +2,8 @@
 package ex13
 
 func (v Var) String() string {
-	return Format(v)
+	return string(v)
+	//return Format(v) // fmt.Fprintf内で空インターフェースにVarを渡した際にString呼び出しの無限再帰になり、stackoverflowを引き起こすので、Formatを呼ばずにそのままstringにして返す。
 }
 
 func (l literal) String() string {
