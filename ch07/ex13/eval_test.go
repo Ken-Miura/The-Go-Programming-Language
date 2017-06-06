@@ -43,7 +43,7 @@ func TestEval(t *testing.T) {
 		got := fmt.Sprintf("%.6g", expr.Eval(test.env))
 		fmt.Printf("\t%v => %s\n", test.env, got)
 		if got != test.want {
-			t.Errorf("%s.Eval() in %v = %q, want %q\n",
+			t.Errorf("%s.Eval() in %v = %q, expected %q\n",
 				test.expr, test.env, got, test.want)
 		}
 	}
@@ -82,7 +82,7 @@ func TestErrors(t *testing.T) {
 		{"!true", "unexpected '!'"},
 		{`"hello"`, "unexpected '\"'"},
 		{"log(10)", `unknown function "log"`},
-		{"sqrt(1, 2)", "call to sqrt has 2 args, want 1"},
+		{"sqrt(1, 2)", "call to sqrt has 2 args, expected 1"},
 	} {
 		expr, err := Parse(test.expr)
 		if err == nil {
@@ -95,7 +95,7 @@ func TestErrors(t *testing.T) {
 		}
 		fmt.Printf("%-20s%v\n", test.expr, err) // (for book)
 		if err.Error() != test.wantErr {
-			t.Errorf("got error %s, want %s", err, test.wantErr)
+			t.Errorf("got error %s, expected %s", err, test.wantErr)
 		}
 	}
 }
@@ -108,6 +108,6 @@ math.Pi             unexpected '.'
 "hello"             unexpected '"'
 
 log(10)             unknown function "log"
-sqrt(1, 2)          call to sqrt has 2 args, want 1
+sqrt(1, 2)          call to sqrt has 2 args, expected 1
 //!-errors
 */

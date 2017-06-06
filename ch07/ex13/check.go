@@ -42,7 +42,7 @@ func (c call) Check(vars map[Var]bool) error {
 		return fmt.Errorf("unknown function %q", c.fn)
 	}
 	if len(c.args) != arity {
-		return fmt.Errorf("call to %s has %d args, want %d",
+		return fmt.Errorf("call to %s has %d args, expected %d",
 			c.fn, len(c.args), arity)
 	}
 	for _, arg := range c.args {
