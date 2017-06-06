@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 package ex01
 
 // CToF converts a Celsius temperature to Fahrenheit.

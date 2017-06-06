@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Issues prints a table of GitHub issues matching the search terms.
 package main
 

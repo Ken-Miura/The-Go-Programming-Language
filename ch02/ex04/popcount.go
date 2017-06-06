@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 package ex04
 
 // pc[i] is the population count of i.

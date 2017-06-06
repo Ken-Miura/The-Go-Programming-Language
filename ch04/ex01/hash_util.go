@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 package main
 
 func CountDifferencesBetweenTwoSHA256Messages(x, y [32]byte) int {

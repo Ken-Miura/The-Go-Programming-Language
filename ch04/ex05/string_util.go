@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 package ex05
 
 func RemoveAdjacentDuplication(strings []string) []string {

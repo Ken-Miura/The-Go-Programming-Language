@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Surface computes an SVG rendering of a 3-D surface function.
 package main
 

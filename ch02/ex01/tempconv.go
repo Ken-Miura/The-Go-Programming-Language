@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Package ex01 performs Celsius and Fahrenheit conversions.
 package ex01
 

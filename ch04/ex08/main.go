@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Charcount computes counts of Unicode characters.
 package main
 

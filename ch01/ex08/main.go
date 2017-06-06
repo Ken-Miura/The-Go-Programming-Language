@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Fetch prints the content found at each specified URL.
 package main
 

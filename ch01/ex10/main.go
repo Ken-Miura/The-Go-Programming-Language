@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Fetchall fetches URLs in parallel and reports their times and sizes.
 package main
 

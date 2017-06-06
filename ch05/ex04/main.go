@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 // Findlinks1 prints the links in an HTML document read from standard input.
 package main
 

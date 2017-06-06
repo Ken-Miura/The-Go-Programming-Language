@@ -1,4 +1,4 @@
-// Copyright 2017 Ken Mirua
+// Copyright 2017 Ken Miura
 package ex03
 
 // TODO func Reverse(s *[...]int) では駄目？？？関数の定義のコンパイルは通るが、実際に関数を使うコードは、実引数を与える部分でコンパイルエラーになる？？？なんで？？？
