@@ -1,0 +1,1 @@
+go run main.go ast.go check.go eval.go parse.go print.go string.go
