@@ -14,6 +14,7 @@ var tests = []struct {
 	{"sqrt(A / pi)", Env{"A": 87616, "pi": math.Pi}, nil},
 	{"pow(x, 3) + pow(y, 3)", Env{"x": 9, "y": 10}, nil},
 	{"5 / 9 * (F - 32)", Env{"F": -40}, nil},
+	{"min(x, y, 3)", Env{"x": 9, "y": 10}, nil},
 }
 
 func init() {
