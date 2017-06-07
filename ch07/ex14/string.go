@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Miura
-package ex13
+package ex14
 
 func (v Var) String() string {
 	return string(v)
