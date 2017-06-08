@@ -8,9 +8,9 @@ import (
 	"os"
 )
 
+// TODO バグ修正
 func main() {
-	f, err := os.Open("books.xml")
-	node, err := ConstructXmlNodeTree(f)
+	node, err := ConstructXmlNodeTree(os.Stdin)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "constructing xml node tree: %v\n", err)
 		return
@@ -44,7 +44,7 @@ type Element struct {
 
 func ConstructXmlNodeTree(r io.Reader) (Node, error) {
 	dec := xml.NewDecoder(r)
-	var root, currentNode, currentNodeParent Node
+	var rootNode, currentNode, currentNodeParent Node = nil, nil, nil
 	for {
 		tok, err := dec.Token()
 		if err == io.EOF {
@@ -55,26 +55,24 @@ func ConstructXmlNodeTree(r io.Reader) (Node, error) {
 		switch tok := tok.(type) {
 		case xml.StartElement:
 			elem := Element{tok.Name, tok.Attr, nil}
-			if root != nil {
-				parent, ok := currentNode.(*Element)
-				if ok {
-					parent.Children = append(parent.Children, &elem)
-					currentNodeParent = parent
-					currentNode = &elem
-				}
-			} else {
-				root = &elem
-				currentNode = root
+			if rootNode == nil {
+				rootNode = &elem
 			}
+			if currentNode != nil {
+				element := currentNode.(*Element)
+				element.Children = append(element.Children, &elem)
+			}
+			currentNodeParent = currentNode
+			currentNode = &elem
 		case xml.EndElement:
 			currentNode = currentNodeParent
 			currentNodeParent = nil
 		case xml.CharData:
-			parent, ok := currentNode.(*Element)
+			element, ok := currentNode.(*Element)
 			if ok {
-				parent.Children = append(parent.Children, CharData(tok))
+				element.Children = append(element.Children, CharData(tok))
 			}
 		}
 	}
-	return root, nil
+	return rootNode, nil
 }
