@@ -1,1 +1,1 @@
-go run main.go div class="back" h2 < xml_spec.html
+go run main.go book id="bk105" author < books.xml
