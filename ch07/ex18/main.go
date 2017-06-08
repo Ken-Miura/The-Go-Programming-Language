@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
-// TODO バグ修正
 func main() {
 	node, err := ConstructXmlNodeTree(os.Stdin)
 	if err != nil {
@@ -26,7 +26,7 @@ func printXmlNodeTree(out io.Writer, node Node, depth int) {
 			printXmlNodeTree(out, childNode, depth+1)
 		}
 	case CharData:
-		fmt.Fprintf(out, "%*s%s\n", depth*2, "", string(node))
+		fmt.Fprintf(out, "%*s%s\n", depth*2, "", strings.TrimSpace(string(node)))
 	default:
 		panic("This line must not be reached.\n")
 	}
@@ -66,7 +66,6 @@ func ConstructXmlNodeTree(r io.Reader) (Node, error) {
 			currentNode = &elem
 		case xml.EndElement:
 			currentNode = currentNodeParent
-			currentNodeParent = nil
 		case xml.CharData:
 			element, ok := currentNode.(*Element)
 			if ok {
