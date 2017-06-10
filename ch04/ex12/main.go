@@ -46,6 +46,8 @@ func main() {
 			fmt.Println("how to create: " + programName + " -o create")
 			return
 		}
+		defer f.Close()
+
 		var index []ComicInfo
 		ok := constructIndex(f, &index)
 		if !ok {
@@ -63,7 +65,7 @@ func main() {
 func createIndex() {
 	f, err := os.Create("index.json")
 	if err != nil {
-		fmt.Printf("failed to create file. error: %v\n", err)
+		fmt.Printf("failed to create file: %v\n", err)
 		return
 	}
 	defer f.Close()
