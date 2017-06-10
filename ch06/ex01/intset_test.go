@@ -1,50 +1,80 @@
 // Copyright 2017 Ken Miura
-package ex01
+package ex01_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Ken-Miura/The-Go-Programming-Language/ch06/ex01"
+)
+
+func TestNewIntSet(t *testing.T) {
+	tests := []struct {
+		integers []int
+	}{
+		{[]int{}},
+		{[]int{0}},
+		{[]int{1}},
+		{[]int{1, 2, 3, 4}},
+		{[]int{63}},
+		{[]int{64}},
+		{[]int{127, 128}},
+	}
+
+	for _, test := range tests {
+		actual := ex01.NewIntSet(test.integers...)
+		if actual.Len() != len(test.integers) {
+			t.Fatalf("(*ex01.IntSet).Len() in ex01.NewIntSet failed: expected is %d but actual is %d", len(test.integers), actual.Len())
+		}
+		for _, integer := range test.integers {
+			if !actual.Has(integer) {
+				t.Fatalf("(*ex01.IntSet).Has(int) in ex01.NewIntSet failed: actual is expected to have %d", integer)
+			}
+		}
+	}
+}
 
 func TestIntSet_Len(t *testing.T) {
 	tests := []struct {
-		receiver IntSet
+		receiver *ex01.IntSet
 		expected int
 	}{
-		{IntSet{[]uint64{0}}, 0},
-		{IntSet{[]uint64{1}}, 1},
-		{IntSet{[]uint64{3}}, 2},
-		{IntSet{[]uint64{0, 1}}, 1},
-		{IntSet{[]uint64{1, 1, 1, 1}}, 4},
-		{IntSet{[]uint64{4, 0, 5, 3}}, 5},
+		{ex01.NewIntSet(), 0},
+		{ex01.NewIntSet(0), 1},
+		{ex01.NewIntSet(0, 1), 2},
+		{ex01.NewIntSet(64), 1},
+		{ex01.NewIntSet(64, 128, 192, 256), 4},
+		{ex01.NewIntSet(2, 2), 1},
 	}
 
 	for _, test := range tests {
 		actual := test.receiver.Len()
 		if actual != test.expected {
-			t.Fatalf("(*IntSet).Len() failed: expected is %d but actual is %d", test.expected, actual)
+			t.Fatalf("(*ex01.IntSet).Len() failed: expected is %d but actual is %d", test.expected, actual)
 		}
 	}
 }
 
 func TestIntSet_Remove(t *testing.T) {
 	tests := []struct {
-		receiver IntSet
+		receiver *ex01.IntSet
 		input    int
-		expected IntSet
+		expected []int
 	}{
-		{IntSet{[]uint64{0}}, 0, IntSet{[]uint64{0}}},
-		{IntSet{[]uint64{2}}, 1, IntSet{[]uint64{0}}},
-		{IntSet{[]uint64{3}}, 2, IntSet{[]uint64{3}}},
-		{IntSet{[]uint64{0: 0, 1: 1}}, 64, IntSet{[]uint64{0: 0, 1: 0}}},
-		{IntSet{[]uint64{0: 1, 1: 1, 2: 0, 3: 1}}, 128, IntSet{[]uint64{0: 1, 1: 1, 2: 0, 3: 1}}},
+		{ex01.NewIntSet(0), 0, []int{}},
+		{ex01.NewIntSet(1), 1, []int{}},
+		{ex01.NewIntSet(0, 1), 2, []int{0, 1}},
+		{ex01.NewIntSet(64), 64, []int{}},
+		{ex01.NewIntSet(0, 64, 192), 128, []int{0, 64, 192}},
 	}
 
 	for _, test := range tests {
 		test.receiver.Remove(test.input)
-		if len(test.receiver.words) != len(test.expected.words) {
-			t.Fatalf("(*IntSet).Remove(int) failed: expected is %v but actual is %v", test.expected, test.receiver)
+		if test.receiver.Len() != len(test.expected) {
+			t.Fatalf("(*ex01.IntSet).Len() in (*ex01.IntSet).Remove(int) failed: expected is %d but actual is %d", len(test.expected), test.receiver.Len())
 		}
-		for i := range test.receiver.words {
-			if test.receiver.words[i] != test.expected.words[i] {
-				t.Fatalf("(*IntSet).Remove(int) failed: expected is %v but actual is %v", test.expected, test.receiver)
+		for _, integer := range test.expected {
+			if !test.receiver.Has(integer) {
+				t.Fatalf("(*ex01.IntSet).Has(int) in *ex01.IntSet).Remove(int) failed: receiver is expected to have %d", integer)
 			}
 		}
 	}
@@ -52,24 +82,25 @@ func TestIntSet_Remove(t *testing.T) {
 
 func TestIntSet_Clear(t *testing.T) {
 	tests := []struct {
-		receiver IntSet
-		expected IntSet
+		receiver *ex01.IntSet
+		values   []int
+		expected []int
 	}{
-		{IntSet{[]uint64{0}}, IntSet{[]uint64{0}}},
-		{IntSet{[]uint64{2}}, IntSet{[]uint64{0}}},
-		{IntSet{[]uint64{3}}, IntSet{[]uint64{0}}},
-		{IntSet{[]uint64{0, 1}}, IntSet{[]uint64{0, 0}}},
-		{IntSet{[]uint64{1, 1, 1, 1}}, IntSet{[]uint64{0, 0, 0, 0}}},
+		{ex01.NewIntSet(), []int{}, []int{}},
+		{ex01.NewIntSet(1), []int{1}, []int{}},
+		{ex01.NewIntSet(0, 1), []int{0, 1}, []int{}},
+		{ex01.NewIntSet(64), []int{64}, []int{}},
+		{ex01.NewIntSet(0, 64, 128, 192), []int{0, 64, 128, 192}, []int{}},
 	}
 
 	for _, test := range tests {
 		test.receiver.Clear()
-		if len(test.receiver.words) != len(test.expected.words) {
-			t.Fatalf("(*IntSet).Clear() failed: expected is %v but actual is %v", test.expected, test.receiver)
+		if test.receiver.Len() != 0 {
+			t.Fatalf("(*ex01.IntSet).Clear() failed: receiver is expected to be length 0 but length %d", test.receiver.Len())
 		}
-		for i := range test.receiver.words {
-			if test.receiver.words[i] != test.expected.words[i] {
-				t.Fatalf("(*IntSet).Clear() failed: expected is %v but actual is %v", test.expected, test.receiver)
+		for _, value := range test.values {
+			if test.receiver.Has(value) {
+				t.Fatalf("(*ex01.IntSet).Clear() failed: receiver is expected to have no valeu but has %d", value)
 			}
 		}
 	}
@@ -77,24 +108,24 @@ func TestIntSet_Clear(t *testing.T) {
 
 func TestIntSet_Copy(t *testing.T) {
 	tests := []struct {
-		receiver IntSet
-		expected IntSet
+		receiver *ex01.IntSet
+		expected []int
 	}{
-		{IntSet{[]uint64{0}}, IntSet{[]uint64{0}}},
-		{IntSet{[]uint64{2}}, IntSet{[]uint64{2}}},
-		{IntSet{[]uint64{3}}, IntSet{[]uint64{3}}},
-		{IntSet{[]uint64{0, 1}}, IntSet{[]uint64{0, 1}}},
-		{IntSet{[]uint64{1, 1, 1, 1}}, IntSet{[]uint64{1, 1, 1, 1}}},
+		{ex01.NewIntSet(), []int{}},
+		{ex01.NewIntSet(1), []int{1}},
+		{ex01.NewIntSet(0, 1), []int{0, 1}},
+		{ex01.NewIntSet(64), []int{64}},
+		{ex01.NewIntSet(0, 64, 128, 192), []int{0, 64, 128, 192}},
 	}
 
 	for _, test := range tests {
 		actual := test.receiver.Copy()
-		if len(actual.words) != len(test.expected.words) {
-			t.Fatalf("(*IntSet).Copy() failed: expected is %v but actual is %v", test.expected, actual)
+		if actual.Len() != len(test.expected) {
+			t.Fatalf("(*ex01.IntSet).Len() in (*ex01.IntSet).Copy() failed: expected is %d but actual is %d", len(test.expected), actual.Len())
 		}
-		for i := range actual.words {
-			if actual.words[i] != test.expected.words[i] {
-				t.Fatalf("(*IntSet).Copy() failed: expected is %v but actual is %v", test.expected, actual)
+		for _, integer := range test.expected {
+			if !actual.Has(integer) {
+				t.Fatalf("(*ex01.IntSet).Has() in (*ex01.IntSet).Copy() failed: actual is expected to have %d", integer)
 			}
 		}
 	}
