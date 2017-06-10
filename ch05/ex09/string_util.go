@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-// TODO regexpのExpandメソッドで簡単にできそう？
+// regexpのreplaceAllStringFuncを利用すると簡潔に記述可能
 func Expand(s string, f func(string) string) string {
 	result := ""
 	for len(s) > 0 {
