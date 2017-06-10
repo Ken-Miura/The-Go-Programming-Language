@@ -11,13 +11,13 @@ import (
 func Expand(s string, f func(string) string) string {
 	result := ""
 	for len(s) > 0 {
-		index := strings.Index(s, "$")
-		if index < 0 {
+		dollarIndex := strings.Index(s, "$")
+		if dollarIndex < 0 {
 			result += s
 			return result
 		}
 		spaceIndex := len(s)
-		for i := index; i < len(s); {
+		for i := dollarIndex; i < len(s); {
 			r, num := utf8.DecodeRune([]byte(s[i:]))
 			if unicode.IsSpace(r) {
 				spaceIndex = i
@@ -25,8 +25,8 @@ func Expand(s string, f func(string) string) string {
 			}
 			i += num
 		}
-		replacement := f(s[index+1 : spaceIndex])
-		result += s[:index]
+		replacement := f(s[dollarIndex+1 : spaceIndex])
+		result += s[:dollarIndex]
 		result += replacement
 		s = s[spaceIndex:]
 	}
