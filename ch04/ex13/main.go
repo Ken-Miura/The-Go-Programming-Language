@@ -12,6 +12,7 @@ import (
 
 const OMDBAPIRoot = "http://www.omdbapi.com/?t="
 
+// 実装した時点 (2017年4月) では無料で実行できたが、2017年5月以降から実行できなくなった。実行するにはOMDBに寄付してAPIを利用可能なアクセス情報を取得する必要がある。
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Fprintln(os.Stderr, `usage: `+os.Args[0]+` "movie title"`)
