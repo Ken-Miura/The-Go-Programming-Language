@@ -38,6 +38,7 @@ func popCountByClearing(x uint64) int {
 	}
 	return n
 }
+
 func (s *IntSet) Remove(x int) {
 	if s == nil {
 		return
