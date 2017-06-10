@@ -49,6 +49,7 @@ func fillMilestoneIfNeeded(milestone *Milestone) *Milestone {
 	return milestone
 }
 
+// TODO リクエストしたページ内にある、リンク先データをキャッシュする。外部へのリクエストは最初の一度だけで、そのあとはローカル内のキャッシュしたページを参照するというように作るのが正しいらしい。
 func main() {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
