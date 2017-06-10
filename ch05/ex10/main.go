@@ -38,9 +38,9 @@ func main() {
 func validateToposortResult(prereqs map[string]map[string]bool, nodes []string) {
 NEXT_NODE:
 	for i, v := range nodes {
-		dependensySet := prereqs[v]
+		dependencySet := prereqs[v]
 		subResult := nodes[:i]
-		for dependency := range dependensySet {
+		for dependency := range dependencySet {
 			for _, s := range subResult {
 				if s == dependency {
 					continue NEXT_NODE
