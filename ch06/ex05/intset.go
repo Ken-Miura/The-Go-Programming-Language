@@ -59,6 +59,14 @@ func (s *IntSet) AddAll(integers ...int) {
 	}
 }
 
+func NewIntSet(integers ...int) *IntSet {
+	pIntSet := new(IntSet)
+	for _, integer := range integers {
+		pIntSet.Add(integer)
+	}
+	return pIntSet
+}
+
 func (s *IntSet) Len() int {
 	num := 0
 	if s == nil {
