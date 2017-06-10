@@ -88,9 +88,17 @@ func main() {
 				fmt.Printf("failed to read temp file (%s): %v", tempFilePath, err)
 				return
 			}
+			body := ""
+			for _, s := range string(content) { // JSONにおいて、文字列の中で改行コードを含める際は\\nを使う。なので\r\nについて置き換える。
+				if s == '\r' || s == '\n' {
+					body += `\\n`
+					continue
+				}
+				body += string(s)
+			}
 			// ここまでbody取得処理
 
-			createIssue(args[0], args[1], args[2], title, string(content))
+			createIssue(args[0], args[1], args[2], title, body)
 			return
 		} else if len(args) == 5 {
 			createIssue(args[0], args[1], args[2], args[3], args[4])
