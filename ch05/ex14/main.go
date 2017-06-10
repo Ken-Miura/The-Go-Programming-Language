@@ -29,17 +29,13 @@ func main() {
 func crawlDir(dir string) []string {
 	fmt.Println(dir)
 	items, err := ioutil.ReadDir(dir)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		fmt.Println(err)
 		return nil
 	}
-	var dirs []string
+	var itemNames []string
 	for _, item := range items {
-		if item.IsDir() {
-			dirs = append(dirs, dir+string(filepath.Separator)+item.Name())
-		} else {
-			fmt.Println(dir + string(filepath.Separator) + item.Name())
-		}
+		itemNames = append(itemNames, dir+string(filepath.Separator)+item.Name())
 	}
-	return dirs
+	return itemNames
 }
