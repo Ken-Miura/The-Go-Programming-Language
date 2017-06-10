@@ -14,7 +14,7 @@ func Expand(s string, f func(string) string) string {
 		index := strings.Index(s, "$")
 		if index < 0 {
 			result += s
-			break
+			return result
 		}
 		spaceIndex := len(s)
 		for i := index; i < len(s); {
