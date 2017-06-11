@@ -26,27 +26,27 @@ func main() {
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
-func sortByTitle(w http.ResponseWriter, r *http.Request) {
-	sortBy("Title", w, r)
+func sortByTitle(w http.ResponseWriter, _ *http.Request) {
+	sortBy("Title", w)
 }
 
-func sortByArtist(w http.ResponseWriter, r *http.Request) {
-	sortBy("Artist", w, r)
+func sortByArtist(w http.ResponseWriter, _ *http.Request) {
+	sortBy("Artist", w)
 }
 
-func sortByAlbum(w http.ResponseWriter, r *http.Request) {
-	sortBy("Album", w, r)
+func sortByAlbum(w http.ResponseWriter, _ *http.Request) {
+	sortBy("Album", w)
 }
 
-func sortByYear(w http.ResponseWriter, r *http.Request) {
-	sortBy("Year", w, r)
+func sortByYear(w http.ResponseWriter, _ *http.Request) {
+	sortBy("Year", w)
 }
 
-func sortByLength(w http.ResponseWriter, r *http.Request) {
-	sortBy("Length", w, r)
+func sortByLength(w http.ResponseWriter, _ *http.Request) {
+	sortBy("Length", w)
 }
 
-func sortBy(key string, w http.ResponseWriter, _ *http.Request) {
+func sortBy(key string, w http.ResponseWriter) {
 	customSortTracks.Lock()
 	defer customSortTracks.Unlock()
 	for i, sortKey := range customSortTracks.SortKeys {
