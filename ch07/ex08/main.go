@@ -8,6 +8,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"sync"
+
 	"github.com/Ken-Miura/The-Go-Programming-Language/ch07/ex08/track_sort"
 )
 
@@ -40,7 +42,7 @@ func printTracks(tracks []*track_sort.Track) {
 func main() {
 	fmt.Println("Custom:")
 	fmt.Println("Primary: Title, Secondary: Year, Tertiary: Length")
-	sort.Sort(track_sort.CustomSort{[]string{"Length", "Year", "Title"}, tracks})
+	sort.Sort(track_sort.CustomSort{[]string{"Length", "Year", "Title"}, tracks, sync.Mutex{}})
 	printTracks(tracks)
 
 	// sort.Stableは、一つ前のソート結果を保ちつつ、新しく与えられたキーでソートするように見える。

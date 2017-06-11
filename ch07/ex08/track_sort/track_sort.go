@@ -1,7 +1,10 @@
 // Copyright 2017 Ken Miura
 package track_sort
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Track struct {
 	Title  string
@@ -32,6 +35,7 @@ func (x ByLength) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 type CustomSort struct {
 	SortKeys []string
 	T        []*Track
+	sync.Mutex
 }
 
 func (x CustomSort) Len() int           { return len(x.T) }
