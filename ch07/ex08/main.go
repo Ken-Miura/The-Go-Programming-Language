@@ -61,14 +61,14 @@ func (x byLength) Len() int           { return len(x) }
 func (x byLength) Less(i, j int) bool { return x[i].Length < x[j].Length }
 func (x byLength) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
-type customSort struct {
+type CustomSort struct {
 	SortKeys []string
 	t        []*Track
 }
 
-func (x customSort) Len() int           { return len(x.t) }
-func (x customSort) Less(i, j int) bool { return x.less(x.t[i], x.t[j]) }
-func (x customSort) less(a, b *Track) bool {
+func (x CustomSort) Len() int           { return len(x.t) }
+func (x CustomSort) Less(i, j int) bool { return x.less(x.t[i], x.t[j]) }
+func (x CustomSort) less(a, b *Track) bool {
 	for i := len(x.SortKeys) - 1; i > -1; i-- {
 		switch x.SortKeys[i] {
 		case "Title":
@@ -97,12 +97,12 @@ func (x customSort) less(a, b *Track) bool {
 	}
 	return false
 }
-func (x customSort) Swap(i, j int) { x.t[i], x.t[j] = x.t[j], x.t[i] }
+func (x CustomSort) Swap(i, j int) { x.t[i], x.t[j] = x.t[j], x.t[i] }
 
 func main() {
 	fmt.Println("Custom:")
 	fmt.Println("Primary: Title, Secondary: Year, Tertiary: Length")
-	sort.Sort(customSort{[]string{"Length", "Year", "Title"}, tracks})
+	sort.Sort(CustomSort{[]string{"Length", "Year", "Title"}, tracks})
 	printTracks(tracks)
 
 	// sort.Stableは、一つ前のソート結果を保ちつつ、新しく与えられたキーでソートするように見える。
