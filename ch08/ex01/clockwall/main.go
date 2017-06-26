@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
@@ -22,12 +21,11 @@ func moveCursorToOrigin() {
 
 var screenLock sync.Mutex
 
-func WriteClockWithScreenLock(timeZone string, i int, buf []byte, nr int) (int, error) {
+func displayWithScreenLock(str string, x, y int) {
 	screenLock.Lock()
 	defer screenLock.Unlock()
-	fmt.Printf("\x1b[%d;0H", i+1)
-	fmt.Printf(timeZone + ": ")
-	return os.Stdout.Write(buf[0:nr])
+	fmt.Printf("\x1b[%d;%dH", y, x)
+	fmt.Printf(str)
 }
 
 func main() {
@@ -38,32 +36,22 @@ func main() {
 		wg.Add(1)
 		go func(i int, arg string) {
 			defer wg.Done()
-			tzAndHost := strings.Split(arg, "=")
-			timeZone := tzAndHost[0]
-			host := tzAndHost[1]
+			timeZoneAndHost := strings.Split(arg, "=")
+			timeZone := timeZoneAndHost[0]
+			host := timeZoneAndHost[1]
 			conn, err := net.Dial("tcp", host)
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer conn.Close()
-			buf := make([]byte, 1024)
+			buf := make([]byte, 1024*4)
 			for {
-				nr, er := conn.Read(buf)
-				if nr > 0 {
-					nw, ew := WriteClockWithScreenLock(timeZone, i, buf, nr)
-					if ew != nil {
-						err = ew
-						break
-					}
-					if nr != nw {
-						err = io.ErrShortWrite
-						break
-					}
+				nbytes, err := conn.Read(buf)
+				if nbytes > 0 {
+					clockString := string(buf[:nbytes])
+					displayWithScreenLock(timeZone+": "+clockString, 0, i+1)
 				}
-				if er != nil {
-					if er != io.EOF {
-						err = er
-					}
+				if err != nil {
 					break
 				}
 			}
