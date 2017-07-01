@@ -24,21 +24,23 @@ var tokens = make(chan struct{}, 20)
 func crawl(url string) []string {
 	fmt.Println(url)
 	tokens <- struct{}{} // acquire a token
+	defer func() {
+		<-tokens // release the token
+	}()
 	list, err := links.Extract(url)
-	<-tokens // release the token
 	if err != nil {
 		log.Print(err)
 	}
 
 	reg := regexp.MustCompile(`https?://`)
-	protocolIndexes := reg.FindIndex([]byte(url))
-	protocol := ""
-	if protocolIndexes != nil {
-		protocol = url[:protocolIndexes[1]]
+	httpIndexes := reg.FindIndex([]byte(url))
+	httpScheme := ""
+	if httpIndexes != nil {
+		httpScheme = url[:httpIndexes[1]]
 	}
 	hostName := ""
-	if protocolIndexes != nil {
-		hostName = url[protocolIndexes[1]:]
+	if httpIndexes != nil {
+		hostName = url[httpIndexes[1]:]
 	}
 	i := strings.Index(hostName, "/")
 	if i != -1 {
@@ -52,7 +54,7 @@ func crawl(url string) []string {
 
 	for _, v := range list {
 		func() {
-			if !strings.HasPrefix(v, protocol+hostName) {
+			if !strings.HasPrefix(v, httpScheme+hostName) {
 				return
 			}
 			resp, err := http.Get(v)
@@ -60,11 +62,23 @@ func crawl(url string) []string {
 				log.Print(err)
 			}
 			defer resp.Body.Close()
-			local := path.Base(resp.Request.URL.Path)
-			if local == "/" {
-				local = "index.html"
+			dir, file := path.Split(resp.Request.URL.Path)
+			if dir != "" {
+				if err := os.Mkdir(hostName+string(filepath.Separator)+dir, 0777); err != nil && !os.IsExist(err) {
+					log.Print(err)
+					return
+				}
 			}
-			f, err := os.Create(hostName + string(filepath.Separator) + local)
+			if file == "" {
+				file = "index.html"
+			}
+			fileName := ""
+			if dir != "" {
+				fileName = hostName + string(filepath.Separator) + dir + string(filepath.Separator) + file
+			} else {
+				fileName = hostName + string(filepath.Separator) + file
+			}
+			f, err := os.Create(fileName)
 			defer func() {
 				if closeErr := f.Close(); err == nil {
 					err = closeErr
@@ -73,7 +87,6 @@ func crawl(url string) []string {
 			_, err = io.Copy(f, resp.Body)
 		}()
 	}
-
 	return list
 }
 
