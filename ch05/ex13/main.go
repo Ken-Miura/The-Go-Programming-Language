@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"gopl.io/ch5/links"
 	"io"
 	"log"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"gopl.io/ch5/links"
 )
 
 func crawl(url string) []string {
@@ -21,25 +22,26 @@ func crawl(url string) []string {
 		log.Print(err)
 	}
 
-	dirName := url
 	reg := regexp.MustCompile(`https?://`)
 	protocolIndexes := reg.FindIndex([]byte(url))
+	protocol := url[:protocolIndexes[1]]
+	hostName := ""
 	if protocolIndexes != nil {
-		dirName = dirName[protocolIndexes[1]:]
+		hostName = url[protocolIndexes[1]:]
 	}
-	i := strings.Index(dirName, "/")
+	i := strings.Index(hostName, "/")
 	if i != -1 {
-		dirName = dirName[:i]
+		hostName = hostName[:i]
 	}
 
-	if err := os.Mkdir(dirName, 0777); err != nil && !os.IsExist(err) {
+	if err := os.Mkdir(hostName, 0777); err != nil && !os.IsExist(err) {
 		log.Print(err)
 		return list
 	}
 
 	for _, v := range list {
 		func() {
-			if !strings.HasPrefix(v, url) {
+			if !strings.HasPrefix(v, protocol+hostName) {
 				return
 			}
 			resp, err := http.Get(v)
@@ -51,7 +53,7 @@ func crawl(url string) []string {
 			if local == "/" {
 				local = "index.html"
 			}
-			f, err := os.Create(dirName + string(filepath.Separator) + local)
+			f, err := os.Create(hostName + string(filepath.Separator) + local)
 			defer func() {
 				if closeErr := f.Close(); err == nil {
 					err = closeErr
