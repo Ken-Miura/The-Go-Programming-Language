@@ -29,14 +29,14 @@ func crawl(url string) []string {
 
 //!-sema
 
-var depth = flag.Int("depth", 1, "depth for crawling link")
+var depth = flag.Int("depth", 1, "depth for crawling url")
 
 type linkAndDepth struct {
 	link  string
 	depth int
 }
 
-func createLinks(urls []string, depth int) []linkAndDepth {
+func createLinksWithDepth(urls []string, depth int) []linkAndDepth {
 	var l []linkAndDepth
 	for _, url := range urls {
 		l = append(l, linkAndDepth{url, depth})
@@ -57,7 +57,7 @@ func main() {
 	// Start with the command-line arguments.
 	n++
 	go func() {
-		worklist <- createLinks(flag.Args(), 0)
+		worklist <- createLinksWithDepth(flag.Args(), 0)
 	}()
 
 	// Crawl the web concurrently.
@@ -72,7 +72,7 @@ func main() {
 				seen[link.link] = true
 				n++
 				go func(link linkAndDepth) {
-					worklist <- createLinks(crawl(link.link), link.depth+1)
+					worklist <- createLinksWithDepth(crawl(link.link), link.depth+1)
 				}(link)
 			}
 		}
