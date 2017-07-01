@@ -24,7 +24,10 @@ func crawl(url string) []string {
 
 	reg := regexp.MustCompile(`https?://`)
 	protocolIndexes := reg.FindIndex([]byte(url))
-	protocol := url[:protocolIndexes[1]]
+	protocol := ""
+	if protocolIndexes != nil {
+		protocol = url[:protocolIndexes[1]]
+	}
 	hostName := ""
 	if protocolIndexes != nil {
 		hostName = url[protocolIndexes[1]:]
