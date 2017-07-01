@@ -1,5 +1,6 @@
 // Copyright 2017 Ken Miura
 // crawl2を修正して作成
+// TODO 5-13とセットでバグ修正
 package main
 
 import (
