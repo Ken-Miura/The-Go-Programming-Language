@@ -1,0 +1,1 @@
+go run main.go https://golang.org https://www.stackoverflow.com https://www.google.com > out.html
