@@ -22,7 +22,7 @@ func echo(c net.Conn, shout string, delay time.Duration) {
 //!+
 func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
-	ch := make(chan string, 10) // input.Text()をチャネルに送る際にブロックされてゴルーチンのリークにならないように適当な容量を確保
+	ch := make(chan string)
 	go func() {
 		for input.Scan() {
 			ch <- input.Text()
@@ -44,6 +44,9 @@ receive:
 	}
 	// NOTE: ignoring potential errors from input.Err()
 	c.Close()
+	for range ch {
+		// do nothing // ch<-input.Text()でブロックされてゴルーチンのリークにならないようにループする。
+	}
 }
 
 //!-
