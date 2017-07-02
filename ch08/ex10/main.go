@@ -124,7 +124,17 @@ func main() {
 						return
 					}
 					foundLinks := crawl(link)
-					go func() { worklist <- foundLinks }()
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						for {
+							select {
+							case <-done:
+								return
+							case worklist <- foundLinks:
+							}
+						}
+					}()
 				}
 			}
 		}()
