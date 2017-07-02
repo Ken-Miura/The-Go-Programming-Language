@@ -63,6 +63,9 @@ func handleConn(conn net.Conn) {
 		case <-time.After(3 * time.Second):
 			fmt.Fprintln(conn, "You were disconnected due to no action for 5 minutes")
 			conn.Close()
+			for range event {
+				// do nothing
+			}
 			break
 		case <-event:
 		}
