@@ -22,31 +22,26 @@ func echo(c net.Conn, shout string, delay time.Duration) {
 //!+
 func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
-	ch := make(chan string)
+	event := make(chan struct{})
 	go func() {
-		for input.Scan() {
-			ch <- input.Text()
-		}
-		close(ch)
-	}()
-receive:
-	for {
 		select {
 		case <-time.After(10 * time.Second):
 			fmt.Fprintln(c, "server stopped receiving due to no requet for 10 seconds")
-			break receive
-		case text, ok := <-ch:
-			if !ok {
-				break receive
+			c.Close()
+			for range event {
+				// do nothing
 			}
-			go echo(c, text, 1*time.Second)
+			return
+		case <-event:
 		}
+	}()
+	for input.Scan() {
+		event <- struct{}{}
+		go echo(c, input.Text(), 1*time.Second)
 	}
 	// NOTE: ignoring potential errors from input.Err()
+	close(event)
 	c.Close()
-	for range ch {
-		// do nothing // ch<-input.Text()でブロックされてゴルーチンのリークにならないようにループする。
-	}
 }
 
 //!-
