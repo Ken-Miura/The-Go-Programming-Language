@@ -59,15 +59,17 @@ func handleConn(conn net.Conn) {
 	input := bufio.NewScanner(conn)
 	event := make(chan struct{})
 	go func() {
-		select {
-		case <-time.After(5 * time.Minute):
-			fmt.Fprintln(conn, "You were disconnected due to no action for 5 minutes")
-			conn.Close()
-			for range event {
-				// do nothing
+		for {
+			select {
+			case <-time.After(5 * time.Minute):
+				fmt.Fprintln(conn, "You were disconnected due to no action for 5 minutes")
+				conn.Close()
+				for range event {
+					// do nothing
+				}
+				return
+			case <-event:
 			}
-			break
-		case <-event:
 		}
 	}()
 	for input.Scan() {
