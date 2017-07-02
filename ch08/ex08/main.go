@@ -24,15 +24,17 @@ func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
 	event := make(chan struct{})
 	go func() {
-		select {
-		case <-time.After(10 * time.Second):
-			fmt.Fprintln(c, "server stopped receiving due to no requet for 10 seconds")
-			c.Close()
-			for range event {
-				// do nothing
+		for {
+			select {
+			case <-time.After(10 * time.Second):
+				fmt.Fprintln(c, "server stopped receiving due to no requet for 10 seconds")
+				c.Close()
+				for range event {
+					// do nothing
+				}
+				return
+			case <-event:
 			}
-			return
-		case <-event:
 		}
 	}()
 	for input.Scan() {
