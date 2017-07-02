@@ -57,36 +57,26 @@ func handleConn(conn net.Conn) {
 	entering <- client
 
 	input := bufio.NewScanner(conn)
-	textch := make(chan string)
-
+	event := make(chan struct{})
 	go func() {
-		for input.Scan() {
-			textch <- client.name + ": " + input.Text()
-		}
-		close(textch)
-	}()
-
-loop:
-	for {
 		select {
-		case <-time.After(5 * time.Minute):
-			client.ch <- "You were disconnected due to no action for 5 minutes"
-			break loop
-		case text, ok := <-textch:
-			if !ok {
-				break loop
-			}
-			messages <- text
+		case <-time.After(3 * time.Second):
+			fmt.Fprintln(conn, "You were disconnected due to no action for 5 minutes")
+			conn.Close()
+			break
+		case <-event:
 		}
+	}()
+	for input.Scan() {
+		event <- struct{}{}
+		messages <- client.name + ": " + input.Text()
 	}
+	close(event)
 	// NOTE: ignoring potential errors from input.Err()
 
 	leaving <- client
 	messages <- client.name + " has left"
 	conn.Close()
-	for range textch {
-		// do nothing // textch <- client.name + ": " + input.Text() で永遠にブロックされることを防ぐためにループ
-	}
 }
 
 func clientWriter(conn net.Conn, ch <-chan string) {
