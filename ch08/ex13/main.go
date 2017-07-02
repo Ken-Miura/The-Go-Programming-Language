@@ -60,7 +60,7 @@ func handleConn(conn net.Conn) {
 	event := make(chan struct{})
 	go func() {
 		select {
-		case <-time.After(3 * time.Second):
+		case <-time.After(5 * time.Minute):
 			fmt.Fprintln(conn, "You were disconnected due to no action for 5 minutes")
 			conn.Close()
 			for range event {
