@@ -1,5 +1,4 @@
 // Copyright 2017 Ken Miura
-// Copyright 2017 Ken Miura
 package main
 
 import (
