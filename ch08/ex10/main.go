@@ -22,8 +22,7 @@ func extract(url string) ([]string, error) {
 	ctx := req.Context()
 	ctx, cancel := context.WithCancel(ctx)
 	req = req.WithContext(ctx)
-	client := http.Client{}
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if cancelled() {
 		cancel()
 	}
