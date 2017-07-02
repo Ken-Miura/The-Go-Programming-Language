@@ -22,10 +22,11 @@ func extract(url string) ([]string, error) {
 	ctx := req.Context()
 	ctx, cancel := context.WithCancel(ctx)
 	req = req.WithContext(ctx)
-	resp, err := http.DefaultClient.Do(req)
-	if cancelled() {
+	go func() {
+		<-done
 		cancel()
-	}
+	}()
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -81,15 +82,6 @@ func crawl(url string) []string {
 }
 
 var done = make(chan struct{})
-
-func cancelled() bool {
-	select {
-	case <-done:
-		return true
-	default:
-		return false
-	}
-}
 
 //!+
 func main() {
