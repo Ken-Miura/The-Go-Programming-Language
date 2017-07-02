@@ -22,12 +22,12 @@ func echo(c net.Conn, shout string, delay time.Duration) {
 //!+
 func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
-	ch := make(chan bool, 10) // input.Scan()の結果をチャネルに送る際にブロックされてゴルーチンのリークにならないように適当な容量を確保
+	ch := make(chan string, 10) // input.Text()をチャネルに送る際にブロックされてゴルーチンのリークにならないように適当な容量を確保
 	go func() {
 		for {
-			result := input.Scan()
-			ch <- result
-			if !result {
+			if input.Scan() {
+				ch <- input.Text()
+			} else {
 				close(ch)
 				return
 			}
@@ -39,11 +39,11 @@ receive:
 		case <-time.After(10 * time.Second):
 			fmt.Fprintln(c, "server stopped receiving due to no requet for 10 seconds")
 			break receive
-		case result := <-ch:
-			if !result {
+		case text, ok := <-ch:
+			if !ok {
 				break receive
 			}
-			go echo(c, input.Text(), 1*time.Second)
+			go echo(c, text, 1*time.Second)
 		}
 	}
 	// NOTE: ignoring potential errors from input.Err()
