@@ -70,6 +70,7 @@ loop:
 	for {
 		select {
 		case <-time.After(5 * time.Minute):
+			client.ch <- "You were disconnected due to no action for 5 minutes"
 			break loop
 		case text, ok := <-textch:
 			if !ok {
