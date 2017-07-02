@@ -24,14 +24,10 @@ func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
 	ch := make(chan string, 10) // input.Text()をチャネルに送る際にブロックされてゴルーチンのリークにならないように適当な容量を確保
 	go func() {
-		for {
-			if input.Scan() {
-				ch <- input.Text()
-			} else {
-				close(ch)
-				return
-			}
+		for input.Scan() {
+			ch <- input.Text()
 		}
+		close(ch)
 	}()
 receive:
 	for {
