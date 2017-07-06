@@ -9,7 +9,9 @@ import (
 )
 
 func TestBank1(t *testing.T) {
-	bank.Withdraw(bank.Balance()) // テストの前処理
+	bank.Withdraw(bank.Balance())       // テストの前処理
+	defer bank.Withdraw(bank.Balance()) // テストの後処理
+
 	done := make(chan struct{})
 
 	// Alice
@@ -32,11 +34,11 @@ func TestBank1(t *testing.T) {
 	if got, want := bank.Balance(), 300; got != want {
 		t.Errorf("Balance = %d, want %d", got, want)
 	}
-	bank.Withdraw(bank.Balance()) // テストの後処理
 }
 
 func TestBank2(t *testing.T) {
-	bank.Withdraw(bank.Balance()) // テストの前処理
+	bank.Withdraw(bank.Balance())       // テストの前処理
+	defer bank.Withdraw(bank.Balance()) // テストの後処理
 	done := make(chan struct{})
 
 	// Alice
@@ -61,7 +63,6 @@ func TestBank2(t *testing.T) {
 	if got, want := bank.Balance(), 100; got != want {
 		t.Errorf("Balance = %d, want %d", got, want)
 	}
-	bank.Withdraw(bank.Balance()) // テストの後処理
 }
 
 func TestWithdraw(t *testing.T) {
