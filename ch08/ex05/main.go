@@ -10,14 +10,17 @@ import (
 	"image/png"
 	"math/cmplx"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
 
 var isParallel = flag.Bool("parallel", false, "whether program executes mandelbrot in parallel or not")
+var nCPUs = flag.Int("cpu", runtime.GOMAXPROCS(-1), "maximum number of CPUs that can be executing simultaneously")
 
 func main() {
 	flag.Parse()
+	runtime.GOMAXPROCS(*nCPUs)
 
 	const (
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
@@ -49,7 +52,6 @@ func processSequentially(img *image.RGBA, height, width int, xmin, xmax, ymin, y
 
 // サンプルコードのfloat64を使ったmandelbrot関数だと並列に実施した方が逐次処理より遅かった。
 // TODO より処理の重い関数で実施
-// TODO 使うゴルーチンの最適な数？？？
 func processInParallel(img *image.RGBA, height, width int, xmin, xmax, ymin, ymax float64) {
 	type colorPoint struct {
 		x int
