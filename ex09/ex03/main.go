@@ -16,16 +16,16 @@ func main() {
 
 	done := make(chan struct{})
 	canceled := make(chan struct{})
-	var wg sync.WaitGroup
-	wg.Add(1)
+	var wg1 sync.WaitGroup
+	wg1.Add(1)
 	go func() {
-		defer wg.Done()
+		defer wg1.Done()
 		<-canceled
 		pMemo.Get("key1", done)
 	}()
 	close(done)
 	canceled <- struct{}{}
-	wg.Wait()
+	wg1.Wait()
 	// この時点でkey1を使ったGet呼び出しはキャンセルされて終了。なのでキャッシュを持っていない。
 
 	start := time.Now()
