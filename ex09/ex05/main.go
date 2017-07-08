@@ -6,23 +6,23 @@ import (
 	"os"
 )
 
-var ch = make(chan string)
-
 func main() {
 
+	ch1 := make(chan string)
+	ch2 := make(chan string)
 	go func() {
-		ch <- "hello"
+		ch1 <- "hello"
 		for {
-			message := <-ch
-			ch <- message
+			message := <-ch2
+			ch1 <- message
 			fmt.Println("p1")
 		}
 	}()
 
 	go func() {
 		for {
-			message := <-ch
-			ch <- message
+			message := <-ch1
+			ch2 <- message
 			fmt.Println("p2")
 		}
 	}()
