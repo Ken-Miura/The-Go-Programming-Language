@@ -25,6 +25,7 @@ type entry struct {
 type request struct {
 	key      string
 	response chan<- result // the client wants a single result
+	done     <-chan struct{}
 }
 
 type Memo struct{ requests chan request }
@@ -36,11 +37,15 @@ func New(f Func) *Memo {
 	return memo
 }
 
-func (memo *Memo) Get(key string) (interface{}, error) {
+func (memo *Memo) Get(key string, done <-chan struct{}) (interface{}, error) {
 	response := make(chan result)
-	memo.requests <- request{key, response}
-	res := <-response
-	return res.value, res.err
+	memo.requests <- request{key, response, done}
+	select {
+	case res := <-response:
+		return res.value, res.err
+	case <-done:
+		return nil, nil
+	}
 }
 
 func (memo *Memo) Close() { close(memo.requests) }
@@ -56,6 +61,12 @@ func (memo *Memo) server(f Func) {
 		if e == nil {
 			// This is the first request for this key.
 			e = &entry{ready: make(chan struct{})}
+			select {
+			case <-req.done:
+				continue
+			default:
+				break
+			}
 			cache[req.key] = e
 			go e.call(f, req.key) // call f(key)
 		}
