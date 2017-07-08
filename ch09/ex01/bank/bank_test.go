@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Ken-Miura/The-Go-Programming-Language/ex09/ex01/bank"
+	"github.com/Ken-Miura/The-Go-Programming-Language/ch09/ex01/bank"
 )
 
 func TestBank1(t *testing.T) {

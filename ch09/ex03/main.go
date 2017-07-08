@@ -7,7 +7,7 @@ import (
 
 	"sync"
 
-	"github.com/Ken-Miura/The-Go-Programming-Language/ex09/ex03/memo"
+	"github.com/Ken-Miura/The-Go-Programming-Language/ch09/ex03/memo"
 )
 
 func main() {

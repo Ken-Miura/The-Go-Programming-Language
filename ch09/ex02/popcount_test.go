@@ -4,7 +4,7 @@ package ex02_test
 import (
 	"testing"
 
-	"github.com/Ken-Miura/The-Go-Programming-Language/ex09/ex02"
+	"github.com/Ken-Miura/The-Go-Programming-Language/ch09/ex02"
 	"gopl.io/ch2/popcount"
 )
 
