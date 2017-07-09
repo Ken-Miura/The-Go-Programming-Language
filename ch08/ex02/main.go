@@ -11,7 +11,7 @@ import (
 )
 
 func handleConn(c net.Conn) {
-	c.Write([]byte("220 Service ready for new user.\n"))
+	c.Write([]byte("200 Service ready for new user.\n"))
 	input := bufio.NewScanner(c)
 	for input.Scan() {
 		if err := input.Err(); err != nil {
@@ -25,6 +25,24 @@ func handleConn(c net.Conn) {
 		command := strings.ToUpper(strings.ToLower(commandAndArgs[0]))
 		//args := commandAndArgs[1:]
 		switch command {
+		case "USER":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "QUIT":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "PORT":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "TYPE":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "MODE":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "STRU":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "RETR":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "STOR":
+			c.Write([]byte("502 Command not implemented.\n"))
+		case "NOOP":
+			c.Write([]byte("502 Command not implemented.\n"))
 		default:
 			c.Write([]byte("502 Command not implemented.\n"))
 		}
