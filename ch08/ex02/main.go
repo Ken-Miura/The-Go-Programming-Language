@@ -32,7 +32,7 @@ func handleConn(c net.Conn) {
 	var wg sync.WaitGroup
 	for input.Scan() {
 		if err := input.Err(); err != nil {
-			// 適切なステータスコード打ち込んで返す TODO
+			c.Write([]byte("500 Syntax error, command unrecognized.\n"))
 			continue
 		}
 		line := input.Text()
