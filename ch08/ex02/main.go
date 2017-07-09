@@ -38,6 +38,7 @@ func handleConn(c net.Conn) {
 		commandAndArgs := strings.Fields(line)
 		command := strings.ToUpper(strings.ToLower(commandAndArgs[0]))
 		args := commandAndArgs[1:]
+		done := make(chan struct{})
 		switch command {
 		case "USER":
 			c.Write([]byte(fmt.Sprintf("230 User logged in, proceed. response for command (%s)\n", line)))
@@ -84,7 +85,10 @@ func handleConn(c net.Conn) {
 				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 				break
 			}
-			stor(c, args[0], clientIP, clientPortForDataTransfer, line)
+			go func() {
+				stor(c, args[0], clientIP, clientPortForDataTransfer, line)
+				close(done)
+			}()
 		case "STOU":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "SITE":
