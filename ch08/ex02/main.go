@@ -96,7 +96,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stor(c, args[0], clientIP, clientPortForDataTransfer, line)
+				stou(c, args[0], clientIP, clientPortForDataTransfer, line)
 			}()
 		case "SITE":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
