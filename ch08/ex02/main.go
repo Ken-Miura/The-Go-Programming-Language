@@ -61,7 +61,7 @@ func handleConn(c net.Conn) {
 			}
 			clientIP, clientPortForDataTransfer = port(c, args[0], line)
 		case "TYPE":
-			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+			c.Write([]byte(fmt.Sprintf("200 Command not implemented. response for command (%s)\n", line)))
 		case "MODE":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "STRU":
@@ -89,7 +89,15 @@ func handleConn(c net.Conn) {
 				stor(c, args[0], clientIP, clientPortForDataTransfer, line)
 			}()
 		case "STOU":
-			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+			if len(args) != 1 {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				stor(c, args[0], clientIP, clientPortForDataTransfer, line)
+			}()
 		case "SITE":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
 		case "NOOP":
@@ -137,7 +145,7 @@ func stor(out io.Writer, fileName string, clientIP string, clientPort int, line 
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, f, connForDataTransfer, line)
+	transferData(out, f, connForDataTransfer, "stored "+fileName, line)
 }
 
 func retr(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
@@ -155,17 +163,41 @@ func retr(out io.Writer, fileName string, clientIP string, clientPort int, line 
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, connForDataTransfer, f, line)
+	transferData(out, connForDataTransfer, f, "retrieved "+fileName, line)
 }
 
-func transferData(out io.Writer, dst io.Writer, src io.Reader, line string) {
+func stou(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
+	for i := 0; true; i++ {
+		if _, err := os.Stat(fileName); err != nil {
+			break
+		}
+		fileName = fileName + fmt.Sprintf(".%d", i) // すでに指定されたファイル名が存在するため、一意なファイル名を用意
+	}
+	f, err := os.Create(fileName)
+	if err != nil {
+		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		return
+	}
+	defer f.Close()
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
+	if err != nil {
+		fmt.Println(err)
+		out.Write([]byte(fmt.Sprintf("425 Can't open data connection. response for command (%s)\n", line)))
+		return
+	}
+	defer connForDataTransfer.Close()
+	transferData(out, f, connForDataTransfer, "stored "+fileName, line)
+}
+
+func transferData(out io.Writer, dst io.Writer, src io.Reader, message, line string) {
 	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
 	_, err := io.Copy(dst, src)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
 		return
 	}
-	out.Write([]byte(fmt.Sprintf("226 Closing data connection. Requested file action successful. response for command (%s)\n", line)))
+	out.Write([]byte(fmt.Sprintf("250 Requested file action okay, completed (%s). response for command (%s)\n", message, line)))
 }
 
 var ip = flag.String("ip", "localhost", "IP address for binding")
