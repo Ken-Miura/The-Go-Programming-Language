@@ -55,13 +55,6 @@ func handleConn(c net.Conn) {
 			wg.Wait()
 			c.Write([]byte(fmt.Sprintf("221 Service closing control connection. response for command (%s)\n", line)))
 		case "PORT": // IPv6はEPRTコマンドで渡されてくるので、このコマンドの処理はIPv4を想定したものでOK
-			/* TODO
-			 * put系操作の場合
-			 * 次に125 Data connection already open; transfer starting.
-			 * 最後に226
-			 * get系操作の場合
-			 * 流れ的にはputと同じ
-			 */
 			if len(args) != 1 {
 				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 				break
@@ -76,7 +69,15 @@ func handleConn(c net.Conn) {
 		case "ALLO":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
 		case "RETR":
-			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+			if len(args) != 1 {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				retr(c, args[0], clientIP, clientPortForDataTransfer, line)
+			}()
 		case "STOR":
 			if len(args) != 1 {
 				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
@@ -136,8 +137,30 @@ func stor(out io.Writer, fileName string, clientIP string, clientPort int, line 
 		return
 	}
 	defer connForDataTransfer.Close()
+	transferData(out, f, connForDataTransfer, line)
+}
+
+func retr(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
+	f, err := os.Open(fileName)
+	if err != nil {
+		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		return
+	}
+	defer f.Close()
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
+	if err != nil {
+		fmt.Println(err)
+		out.Write([]byte(fmt.Sprintf("425 Can't open data connection. response for command (%s)\n", line)))
+		return
+	}
+	defer connForDataTransfer.Close()
+	transferData(out, connForDataTransfer, f, line)
+}
+
+func transferData(out io.Writer, dst io.Writer, src io.Reader, line string) {
 	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
-	_, err = io.Copy(f, connForDataTransfer)
+	_, err := io.Copy(dst, src)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
 		return
