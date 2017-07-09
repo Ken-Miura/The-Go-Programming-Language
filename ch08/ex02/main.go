@@ -16,8 +16,17 @@ import (
 func handleConn(c net.Conn) {
 	defer c.Close()
 	c.Write([]byte("220 Service ready for new user.\n"))
-	clientIP := ""
-	clientPortForDataTransfer := -1
+	clientIP, portString, err := net.SplitHostPort(c.RemoteAddr().String())
+	if err != nil {
+		log.Print("cannot get client IP address")
+		clientIP = ""
+	}
+	tmp, err := strconv.ParseInt(portString, 10, 0)
+	clientPortForDataTransfer := int(tmp)
+	if err != nil {
+		log.Print("cannot get default port for data transfer to client")
+		clientPortForDataTransfer = -1
+	}
 	input := bufio.NewScanner(c)
 	for input.Scan() {
 		if err := input.Err(); err != nil {
