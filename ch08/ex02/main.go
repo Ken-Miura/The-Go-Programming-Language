@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func handleConn(c net.Conn) {
@@ -28,6 +29,7 @@ func handleConn(c net.Conn) {
 		clientPortForDataTransfer = -1
 	}
 	input := bufio.NewScanner(c)
+	var wg sync.WaitGroup
 	for input.Scan() {
 		if err := input.Err(); err != nil {
 			// 適切なステータスコード打ち込んで返す TODO
@@ -38,7 +40,6 @@ func handleConn(c net.Conn) {
 		commandAndArgs := strings.Fields(line)
 		command := strings.ToUpper(strings.ToLower(commandAndArgs[0]))
 		args := commandAndArgs[1:]
-		done := make(chan struct{})
 		switch command {
 		case "USER":
 			c.Write([]byte(fmt.Sprintf("230 User logged in, proceed. response for command (%s)\n", line)))
@@ -51,11 +52,7 @@ func handleConn(c net.Conn) {
 		case "ACCT":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
 		case "QUIT":
-			/* TODO
-			 * データ転送がない場合、コントロール接続を閉じる。
-			 * データ転送がある場合、転送結果を送信後にコントロール接続を閉じる。
-			 * コントロール接続が予期せず終了した場合、サーバーは中断(ABOR)とログアウト(QUIT)との効果を持つ動作
-			 */
+			wg.Wait()
 			c.Write([]byte(fmt.Sprintf("221 Service closing control connection. response for command (%s)\n", line)))
 		case "PORT": // IPv6はEPRTコマンドで渡されてくるので、このコマンドの処理はIPv4を想定したものでOK
 			/* TODO
@@ -85,9 +82,10 @@ func handleConn(c net.Conn) {
 				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 				break
 			}
+			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				stor(c, args[0], clientIP, clientPortForDataTransfer, line)
-				close(done)
 			}()
 		case "STOU":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
