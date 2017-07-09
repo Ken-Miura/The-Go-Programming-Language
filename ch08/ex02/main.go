@@ -101,32 +101,32 @@ func handleConn(c net.Conn) {
 	}
 }
 
-func port(c net.Conn, arg, line string) (string, int) {
+func port(out io.Writer, arg, line string) (string, int) {
 	IPv4AndPort := strings.Split(arg, ",")
 	clientIP := IPv4AndPort[0] + "." + IPv4AndPort[1] + "." + IPv4AndPort[2] + "." + IPv4AndPort[3]
 	firstSegmentOfPortNum, err := strconv.ParseInt(IPv4AndPort[4], 10, 0)
 	if err != nil {
-		c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+		out.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 		return "", -1
 	}
 	secondSegmentOfPortNum, err := strconv.ParseInt(IPv4AndPort[5], 10, 0)
 	if err != nil {
-		c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+		out.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 		return "", -1
 	}
 	clientPortForDataTransfer := int(firstSegmentOfPortNum)*256 + int(secondSegmentOfPortNum)
 	if clientPortForDataTransfer < 0 || clientPortForDataTransfer > 65535 {
-		c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+		out.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 		return "", -1
 	}
-	c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+	out.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
 	return clientIP, clientPortForDataTransfer
 }
 
-func stor(c net.Conn, fileName string, clientIP string, clientPort int, line string) {
+func stor(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
 	f, err := os.Create(fileName)
 	if err != nil {
-		c.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
 		return
 	}
 	defer f.Close()
@@ -134,17 +134,17 @@ func stor(c net.Conn, fileName string, clientIP string, clientPort int, line str
 	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
 	if err != nil {
 		fmt.Println(err)
-		c.Write([]byte(fmt.Sprintf("425 Can't open data connection. response for command (%s)\n", line)))
+		out.Write([]byte(fmt.Sprintf("425 Can't open data connection. response for command (%s)\n", line)))
 		return
 	}
 	defer connForDataTransfer.Close()
-	c.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
+	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
 	_, err = io.Copy(f, connForDataTransfer)
 	if err != nil {
-		c.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
 		return
 	}
-	c.Write([]byte(fmt.Sprintf("226 Closing data connection. Requested file action successful. response for command (%s)\n", line)))
+	out.Write([]byte(fmt.Sprintf("226 Closing data connection. Requested file action successful. response for command (%s)\n", line)))
 }
 
 var ip = flag.String("ip", "localhost", "IP address for binding")
