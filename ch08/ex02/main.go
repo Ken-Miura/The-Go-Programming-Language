@@ -20,7 +20,7 @@ func handleConn(c net.Conn) {
 			continue
 		}
 		line := input.Text()
-		fmt.Println(line) // debug用にプリント
+		log.Print(line)
 		commandAndArgs := strings.Fields(line)
 		command := strings.ToUpper(strings.ToLower(commandAndArgs[0]))
 		//args := commandAndArgs[1:]
