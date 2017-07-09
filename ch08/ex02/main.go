@@ -5,17 +5,18 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 )
 
 func handleConn(c net.Conn) {
+	defer c.Close()
 	c.Write([]byte("220 Service ready for new user.\n"))
-	//portForDataTransfer := *port - 1
 	clientIP := ""
-	fmt.Print(clientIP)
 	clientPortForDataTransfer := -1
 	input := bufio.NewScanner(c)
 	for input.Scan() {
@@ -48,7 +49,6 @@ func handleConn(c net.Conn) {
 			c.Write([]byte(fmt.Sprintf("221 Service closing control connection. response for command (%s)\n", line)))
 		case "PORT": // IPv6はEPRTコマンドで渡されてくるので、このコマンドの処理はIPv4を想定したものでOK
 			/* TODO
-			 * 成功 → 200
 			 * put系操作の場合
 			 * 次に125 Data connection already open; transfer starting.
 			 * 最後に226
@@ -59,24 +59,7 @@ func handleConn(c net.Conn) {
 				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 				break
 			}
-			IPv4AndPort := strings.Split(args[0], ",")
-			clientIP = IPv4AndPort[0] + "." + IPv4AndPort[1] + "." + IPv4AndPort[2] + "." + IPv4AndPort[3]
-			firstByteOfPortNum, err := strconv.ParseInt(IPv4AndPort[4], 10, 0)
-			if err != nil {
-				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
-				break
-			}
-			secondByteOfPortNum, err := strconv.ParseInt(IPv4AndPort[5], 10, 0)
-			if err != nil {
-				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
-				break
-			}
-			clientPortForDataTransfer = int(firstByteOfPortNum)*4 + int(secondByteOfPortNum)
-			if clientPortForDataTransfer < 0 || clientPortForDataTransfer > 65535 {
-				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
-				break
-			}
-			c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+			clientIP, clientPortForDataTransfer = port(c, args[0], line)
 		case "TYPE":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "MODE":
@@ -88,7 +71,11 @@ func handleConn(c net.Conn) {
 		case "RETR":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "STOR":
-			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+			if len(args) != 1 {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			stor(c, args[0], clientIP, clientPortForDataTransfer, line)
 		case "STOU":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "SITE":
@@ -99,11 +86,56 @@ func handleConn(c net.Conn) {
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		}
 	}
-	c.Close()
+}
+
+func port(c net.Conn, arg, line string) (string, int) {
+	IPv4AndPort := strings.Split(arg, ",")
+	clientIP := IPv4AndPort[0] + "." + IPv4AndPort[1] + "." + IPv4AndPort[2] + "." + IPv4AndPort[3]
+	firstSegmentOfPortNum, err := strconv.ParseInt(IPv4AndPort[4], 10, 0)
+	if err != nil {
+		c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+		return "", -1
+	}
+	secondSegmentOfPortNum, err := strconv.ParseInt(IPv4AndPort[5], 10, 0)
+	if err != nil {
+		c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+		return "", -1
+	}
+	clientPortForDataTransfer := int(firstSegmentOfPortNum)*256 + int(secondSegmentOfPortNum)
+	if clientPortForDataTransfer < 0 || clientPortForDataTransfer > 65535 {
+		c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+		return "", -1
+	}
+	c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+	return clientIP, clientPortForDataTransfer
+}
+
+func stor(c net.Conn, fileName string, clientIP string, clientPort int, line string) {
+	f, err := os.Create(fileName)
+	if err != nil {
+		c.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		return
+	}
+	defer f.Close()
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
+	if err != nil {
+		fmt.Println(err)
+		c.Write([]byte(fmt.Sprintf("425 Can't open data connection. response for command (%s)\n", line)))
+		return
+	}
+	defer connForDataTransfer.Close()
+	c.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
+	_, err = io.Copy(f, connForDataTransfer)
+	if err != nil {
+		c.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		return
+	}
+	c.Write([]byte(fmt.Sprintf("226 Closing data connection. Requested file action successful. response for command (%s)\n", line)))
 }
 
 var ip = flag.String("ip", "localhost", "IP address for binding")
-var port = flag.Int("port", 21, "port number for control connection ")
+var portForControlConnection = flag.Int("port", 21, "port number for control connection ")
 
 func init() {
 	flag.Parse()
@@ -111,7 +143,7 @@ func init() {
 }
 
 func main() {
-	if *port < 0 {
+	if *portForControlConnection < 0 {
 		fmt.Println("Port number must be 0 or more.")
 		return
 	}
@@ -126,7 +158,7 @@ func main() {
 		return
 	}
 
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *ip, *port))
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *ip, *portForControlConnection))
 	if err != nil {
 		log.Fatal(err)
 	}
