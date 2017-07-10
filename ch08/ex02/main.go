@@ -252,6 +252,7 @@ func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType
 						}
 						bufForLF.WriteByte(tmp[i])
 					}
+					_, writeErr = dst.Write(bufForLF.Bytes())
 				} else {
 					_, writeErr = dst.Write(b[:n])
 				}
