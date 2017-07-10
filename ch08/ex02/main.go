@@ -233,21 +233,22 @@ func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType
 			n, err := src.Read(b[:])
 			if n > 0 {
 				var writeErr error
-				if bytes.Contains(b[:n], []byte("\r")) || bytes.Contains(b[:n], []byte("\n")) {
-					// \r→\r\n
+				str := string(b[:n])
+				if strings.Contains(str, "\r") || strings.Contains(str, "\n") {
+					// \r → \r\n
 					var bufForCR bytes.Buffer
 					for i := 0; i < n; i++ {
-						bufForCR.WriteByte(b[i])
-						if b[i] == byte("\r") && i != n-1 && b[i+1] != byte("\n") {
-							bufForCR.WriteByte(byte("\n"))
+						bufForCR.WriteByte(str[i])
+						if str[i] == '\r' && i != n-1 && str[i+1] != byte('\n') {
+							bufForCR.WriteByte('\n')
 						}
 					}
-					// \n→\r\n
+					// \n → \r\n
 					var bufForLF bytes.Buffer
-					tmp := bufForCR.Bytes()
+					tmp := string(bufForCR.Bytes())
 					for i := 0; i < len(tmp); i++ {
-						if tmp[i] == byte("\n") && i != 0 && tmp[i-1] != byte("\r") {
-							bufForLF.WriteByte(byte("\r"))
+						if tmp[i] == '\n' && i != 0 && tmp[i-1] != '\r' {
+							bufForLF.WriteByte('\r')
 						}
 						bufForLF.WriteByte(tmp[i])
 					}
