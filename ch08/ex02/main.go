@@ -61,9 +61,17 @@ func handleConn(c net.Conn) {
 			}
 			clientIP, clientPortForDataTransfer = port(c, args[0], line)
 		case "TYPE":
-			c.Write([]byte(fmt.Sprintf("200 Command not implemented. response for command (%s)\n", line)))
-		case "MODE":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+		case "MODE":
+			if len(args) != 1 {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			if args[0] != "S" {
+				c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+			} else {
+				c.Write([]byte(fmt.Sprintf("200 We support only stream mode. response for command (%s)\n", line)))
+			}
 		case "STRU":
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "ALLO":
