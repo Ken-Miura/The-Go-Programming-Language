@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -14,10 +15,18 @@ import (
 	"sync"
 )
 
+type dataType int
+
+const (
+	A dataType = iota
+	I
+)
+
 func handleConn(c net.Conn) {
 	defer c.Close()
 	c.Write([]byte("220 Service ready for new user.\n"))
 	clientIP, portString, err := net.SplitHostPort(c.RemoteAddr().String())
+	dataType := A
 	if err != nil {
 		log.Print("cannot get client IP address")
 		clientIP = ""
@@ -61,7 +70,23 @@ func handleConn(c net.Conn) {
 			}
 			clientIP, clientPortForDataTransfer = port(c, args[0], line)
 		case "TYPE":
-			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+			if !(len(args) == 1 || len(args) == 2) {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			if args[0] == "A" {
+				dataType = A
+				if len(args) == 2 && args[0] != "NON PRINT" {
+					c.Write([]byte(fmt.Sprintf("200 We support only NON PRINT. response for command (%s)\n", line)))
+				} else {
+					c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+				}
+			} else if args[0] == "I" {
+				dataType = I
+				c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+			} else {
+				c.Write([]byte(fmt.Sprintf("200 We support only either ASCII TYPE or IMAGE TYPE. response for command (%s)\n", line)))
+			}
 		case "MODE":
 			if len(args) != 1 {
 				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
@@ -84,7 +109,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				retr(c, args[0], clientIP, clientPortForDataTransfer, line)
+				retr(c, args[0], clientIP, clientPortForDataTransfer, dataType, line)
 			}()
 		case "STOR":
 			if len(args) != 1 {
@@ -94,7 +119,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stor(c, args[0], clientIP, clientPortForDataTransfer, line)
+				stor(c, args[0], clientIP, clientPortForDataTransfer, dataType, line)
 			}()
 		case "STOU":
 			if len(args) != 1 {
@@ -104,7 +129,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stou(c, args[0], clientIP, clientPortForDataTransfer, line)
+				stou(c, args[0], clientIP, clientPortForDataTransfer, dataType, line)
 			}()
 		case "SITE":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
@@ -138,7 +163,7 @@ func port(out io.Writer, arg, line string) (string, int) {
 	return clientIP, clientPortForDataTransfer
 }
 
-func stor(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
+func stor(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, line string) {
 	f, err := os.Create(fileName)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
@@ -153,10 +178,10 @@ func stor(out io.Writer, fileName string, clientIP string, clientPort int, line 
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, f, connForDataTransfer, "stored "+fileName, line)
+	transferData(out, f, connForDataTransfer, dataType, "stored "+fileName, line)
 }
 
-func retr(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
+func retr(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, line string) {
 	f, err := os.Open(fileName)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
@@ -171,10 +196,10 @@ func retr(out io.Writer, fileName string, clientIP string, clientPort int, line 
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, connForDataTransfer, f, "retrieved "+fileName, line)
+	transferData(out, connForDataTransfer, f, dataType, "retrieved "+fileName, line)
 }
 
-func stou(out io.Writer, fileName string, clientIP string, clientPort int, line string) {
+func stou(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, line string) {
 	for i := 0; true; i++ {
 		if _, err := os.Stat(fileName); err != nil {
 			break
@@ -195,12 +220,57 @@ func stou(out io.Writer, fileName string, clientIP string, clientPort int, line 
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, f, connForDataTransfer, "stored "+fileName, line)
+	transferData(out, f, connForDataTransfer, dataType, "stored "+fileName, line)
 }
 
-func transferData(out io.Writer, dst io.Writer, src io.Reader, message, line string) {
+func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType, message, line string) {
 	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
-	_, err := io.Copy(dst, src)
+	var err error
+	switch dataType {
+	case A:
+		var b [4096]byte
+		for {
+			n, err := src.Read(b[:])
+			if n > 0 {
+				var writeErr error
+				if bytes.Contains(b[:n], []byte("\r")) || bytes.Contains(b[:n], []byte("\n")) {
+					// \r→\r\n
+					var bufForCR bytes.Buffer
+					for i := 0; i < n; i++ {
+						bufForCR.WriteByte(b[i])
+						if b[i] == byte("\r") && i != n-1 && b[i+1] != byte("\n") {
+							bufForCR.WriteByte(byte("\n"))
+						}
+					}
+					// \n→\r\n
+					var bufForLF bytes.Buffer
+					tmp := bufForCR.Bytes()
+					for i := 0; i < len(tmp); i++ {
+						if tmp[i] == byte("\n") && i != 0 && tmp[i-1] != byte("\r") {
+							bufForLF.WriteByte(byte("\r"))
+						}
+						bufForLF.WriteByte(tmp[i])
+					}
+				} else {
+					_, writeErr = dst.Write(b[:n])
+				}
+				if err == nil {
+					err = writeErr
+				}
+			}
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+				return
+			}
+		}
+	case I:
+		_, err = io.Copy(dst, src)
+	default:
+		panic("This line must not be reached.")
+	}
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
 		return
