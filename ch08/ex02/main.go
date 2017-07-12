@@ -18,15 +18,15 @@ import (
 type dataType int
 
 const (
-	A dataType = iota
-	I
+	ASCII dataType = iota
+	IMAGE
 )
 
 func handleConn(c net.Conn) {
 	defer c.Close()
 	c.Write([]byte("220 Service ready for new user.\n"))
 	clientIP, portString, err := net.SplitHostPort(c.RemoteAddr().String())
-	dataType := A
+	dataType := ASCII
 	if err != nil {
 		log.Print("cannot get client IP address")
 		clientIP = ""
@@ -75,14 +75,14 @@ func handleConn(c net.Conn) {
 				break
 			}
 			if args[0] == "A" {
-				dataType = A
+				dataType = ASCII
 				if len(args) == 2 && args[0] != "NON PRINT" {
 					c.Write([]byte(fmt.Sprintf("200 We support only NON PRINT. response for command (%s)\n", line)))
 				} else {
 					c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
 				}
 			} else if args[0] == "I" {
-				dataType = I
+				dataType = IMAGE
 				c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
 			} else {
 				c.Write([]byte(fmt.Sprintf("200 We support only either ASCII TYPE or IMAGE TYPE. response for command (%s)\n", line)))
@@ -98,6 +98,7 @@ func handleConn(c net.Conn) {
 				c.Write([]byte(fmt.Sprintf("200 We support only stream mode. response for command (%s)\n", line)))
 			}
 		case "STRU":
+
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		case "ALLO":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
@@ -227,7 +228,7 @@ func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType
 	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
 	var err error
 	switch dataType {
-	case A:
+	case ASCII:
 		var b [4096]byte
 		for {
 			n, err := src.Read(b[:])
@@ -268,7 +269,7 @@ func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType
 				return
 			}
 		}
-	case I:
+	case IMAGE:
 		_, err = io.Copy(dst, src)
 	default:
 		panic("This line must not be reached.")
