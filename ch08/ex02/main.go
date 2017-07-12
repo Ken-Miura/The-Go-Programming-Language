@@ -15,6 +15,44 @@ import (
 	"sync"
 )
 
+var ip = flag.String("ip", "localhost", "IP address for binding")
+var portForControlConnection = flag.Int("port", 21, "port number for control connection ")
+
+func init() {
+	flag.Parse()
+
+}
+
+func main() {
+	if *portForControlConnection < 0 {
+		fmt.Println("Port number must be 0 or more.")
+		return
+	}
+	if *ip == "" {
+		fmt.Println("IP address must not be empty.")
+		return
+	}
+	if strings.Contains(*ip, ":") { // IPv6のとき[]で囲む必要があるため、IPv6かどうかの判定
+		// TODO IPv6をサポートするためにはEPRTコマンドに対応しなければならない（RFC2428)
+		//*ip = "[" + *ip + "]" net.JoinHostPort実装の際の参考
+		fmt.Println("IPv6 is not supported. Use IPv4 instead.")
+		return
+	}
+
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *ip, *portForControlConnection))
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			log.Print(err) // e.g., connection aborted
+			continue
+		}
+		go handleConn(conn)
+	}
+}
+
 type dataType int
 
 const (
@@ -22,11 +60,19 @@ const (
 	IMAGE
 )
 
+type dataStructure int
+
+const (
+	FILE dataStructure = iota
+	RECORD
+)
+
 func handleConn(c net.Conn) {
 	defer c.Close()
 	c.Write([]byte("220 Service ready for new user.\n"))
 	clientIP, portString, err := net.SplitHostPort(c.RemoteAddr().String())
 	dataType := ASCII
+	dataStructure := FILE
 	if err != nil {
 		log.Print("cannot get client IP address")
 		clientIP = ""
@@ -98,8 +144,19 @@ func handleConn(c net.Conn) {
 				c.Write([]byte(fmt.Sprintf("200 We support only stream mode. response for command (%s)\n", line)))
 			}
 		case "STRU":
-
-			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
+			if len(args) != 1 {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			if args[0] == "F" {
+				dataStructure = FILE
+				c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+			} else if args[0] == "R" {
+				dataStructure = RECORD
+				c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+			} else {
+				c.Write([]byte(fmt.Sprintf("200 We support only either file-structure or record-structure. response for command (%s)\n", line)))
+			}
 		case "ALLO":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
 		case "RETR":
@@ -110,7 +167,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				retr(c, args[0], clientIP, clientPortForDataTransfer, dataType, line)
+				retr(c, args[0], clientIP, clientPortForDataTransfer, dataType, dataStructure, line)
 			}()
 		case "STOR":
 			if len(args) != 1 {
@@ -120,7 +177,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stor(c, args[0], clientIP, clientPortForDataTransfer, dataType, line)
+				stor(c, args[0], clientIP, clientPortForDataTransfer, dataType, dataStructure, line)
 			}()
 		case "STOU":
 			if len(args) != 1 {
@@ -130,7 +187,7 @@ func handleConn(c net.Conn) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stou(c, args[0], clientIP, clientPortForDataTransfer, dataType, line)
+				stou(c, args[0], clientIP, clientPortForDataTransfer, dataType, dataStructure, line)
 			}()
 		case "SITE":
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
@@ -164,7 +221,7 @@ func port(out io.Writer, arg, line string) (string, int) {
 	return clientIP, clientPortForDataTransfer
 }
 
-func stor(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, line string) {
+func stor(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, dataStructure dataStructure, line string) {
 	f, err := os.Create(fileName)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
@@ -179,10 +236,10 @@ func stor(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, f, connForDataTransfer, dataType, "stored "+fileName, line)
+	transferData(out, f, connForDataTransfer, dataType, dataStructure, "stored "+fileName, line)
 }
 
-func retr(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, line string) {
+func retr(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, dataStructure dataStructure, line string) {
 	f, err := os.Open(fileName)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
@@ -197,10 +254,10 @@ func retr(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, connForDataTransfer, f, dataType, "retrieved "+fileName, line)
+	transferData(out, connForDataTransfer, f, dataType, dataStructure, "retrieved "+fileName, line)
 }
 
-func stou(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, line string) {
+func stou(out io.Writer, fileName string, clientIP string, clientPort int, dataType dataType, dataStructure dataStructure, line string) {
 	for i := 0; true; i++ {
 		if _, err := os.Stat(fileName); err != nil {
 			break
@@ -221,14 +278,13 @@ func stou(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, f, connForDataTransfer, dataType, "stored "+fileName, line)
+	transferData(out, f, connForDataTransfer, dataType, dataStructure, "stored "+fileName, line)
 }
 
-func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType, message, line string) {
+func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType, dataStructure dataStructure, message, line string) {
 	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
 	var err error
-	switch dataType {
-	case ASCII:
+	if dataType == ASCII && dataStructure == RECORD {
 		var b [4096]byte
 		for {
 			n, err := src.Read(b[:])
@@ -269,52 +325,12 @@ func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType
 				return
 			}
 		}
-	case IMAGE:
+	} else {
 		_, err = io.Copy(dst, src)
-	default:
-		panic("This line must not be reached.")
 	}
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
 		return
 	}
 	out.Write([]byte(fmt.Sprintf("250 Requested file action okay, completed (%s). response for command (%s)\n", message, line)))
-}
-
-var ip = flag.String("ip", "localhost", "IP address for binding")
-var portForControlConnection = flag.Int("port", 21, "port number for control connection ")
-
-func init() {
-	flag.Parse()
-
-}
-
-func main() {
-	if *portForControlConnection < 0 {
-		fmt.Println("Port number must be 0 or more.")
-		return
-	}
-	if *ip == "" {
-		fmt.Println("IP address must not be empty.")
-		return
-	}
-	if strings.Contains(*ip, ":") { // IPv6のとき[]で囲む必要があるため、IPv6かどうかの判定
-		// TODO IPv6をサポートするためにはEPRTコマンドに対応しなければならない（RFC2428)
-		//*ip = "[" + *ip + "]" net.JoinHostPort実装の際の参考
-		fmt.Println("IPv6 is not supported. Use IPv4 instead.")
-		return
-	}
-
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *ip, *portForControlConnection))
-	if err != nil {
-		log.Fatal(err)
-	}
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			log.Print(err) // e.g., connection aborted
-			continue
-		}
-		go handleConn(conn)
-	}
 }
