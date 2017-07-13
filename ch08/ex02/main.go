@@ -15,7 +15,7 @@ import (
 	"sync"
 )
 
-var ip = flag.String("ip", "localhost", "IP address for binding")
+var ip = flag.String("ip", "", "IP address for binding")
 var portForControlConnection = flag.Int("port", 21, "port number for control connection ")
 
 func init() {
@@ -30,6 +30,8 @@ func main() {
 	}
 	if *ip == "" {
 		fmt.Println("IP address must not be empty.")
+		fmt.Println("usage: " + os.Args[0] + " -ip 'IPv4 address'")
+		fmt.Println("ex: " + os.Args[0] + " -ip 192.168.0.5")
 		return
 	}
 	if strings.Contains(*ip, ":") { // IPv6のとき[]で囲む必要があるため、IPv6かどうかの判定
