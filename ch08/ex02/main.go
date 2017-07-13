@@ -341,7 +341,7 @@ func list(out io.Writer, item string, clientIP string, clientPort int, dataType 
 		return
 	}
 	defer connForDataTransfer.Close()
-	transferData(out, connForDataTransfer, buf, dataType, dataStructure, "list "+itemInfo.Name(), line)
+	transferData(out, connForDataTransfer, &buf, dataType, dataStructure, "list "+itemInfo.Name(), line)
 }
 
 func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType, dataStructure dataStructure, message, line string) {
