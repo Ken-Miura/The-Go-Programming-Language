@@ -73,9 +73,9 @@ const (
 func handleConn(c net.Conn) {
 	defer c.Close()
 	c.Write([]byte("220 Service ready for new user.\n"))
-	clientIP, portString, err := net.SplitHostPort(c.RemoteAddr().String())
 	dataType := ASCII
 	dataStructure := FILE
+	clientIP, portString, err := net.SplitHostPort(c.RemoteAddr().String())
 	if err != nil {
 		log.Print("cannot get client IP address")
 		clientIP = ""
