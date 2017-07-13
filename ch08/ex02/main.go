@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -195,6 +196,17 @@ func handleConn(c net.Conn) {
 			c.Write([]byte(fmt.Sprintf("202 Command not implemented, superfluous at this site. response for command (%s)\n", line)))
 		case "NOOP":
 			c.Write([]byte(fmt.Sprintf("200 Command okay. response for command (%s)\n", line)))
+		case "LIST":
+			if len(args) != 0 { // ファイル名やディレクトリ名が引数で指定されてくる場合がある。しかし現在は未サポートで、ワーキングディレクトリの情報一覧を取ってくる処理のみサポート。
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				list(c, ".", clientIP, clientPortForDataTransfer, dataType, dataStructure, line)
+			}()
+
 		default:
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		}
@@ -281,6 +293,55 @@ func stou(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 	}
 	defer connForDataTransfer.Close()
 	transferData(out, f, connForDataTransfer, dataType, dataStructure, "stored "+fileName, line)
+}
+
+func list(out io.Writer, item string, clientIP string, clientPort int, dataType dataType, dataStructure dataStructure, line string) {
+	itemInfo, err := os.Stat(item)
+	if err != nil {
+		out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+		return
+	}
+	var buf bytes.Buffer
+	if itemInfo.IsDir() {
+		filesInfo, err := ioutil.ReadDir(item)
+		if err != nil {
+			out.Write([]byte(fmt.Sprintf("451 Requested action aborted. response for command (%s)\n", line)))
+			return
+		}
+		for _, fileInfo := range filesInfo {
+			buf.WriteString(fileInfo.ModTime().String())
+			buf.WriteString("\t")
+			if fileInfo.IsDir() {
+				buf.WriteString("<DIR>")
+				buf.WriteString("\t")
+				buf.WriteString("\t")
+			} else {
+				buf.WriteString("\t")
+				buf.WriteString(strconv.FormatInt(fileInfo.Size(), 10))
+				buf.WriteString("\t")
+			}
+			buf.WriteString(fileInfo.Name())
+			buf.WriteString("\n")
+		}
+	} else {
+		buf.WriteString(itemInfo.ModTime().String())
+		buf.WriteString("\t")
+		buf.WriteString("\t")
+		buf.WriteString(strconv.FormatInt(itemInfo.Size(), 10))
+		buf.WriteString("\t")
+		buf.WriteString(itemInfo.Name())
+		buf.WriteString("\n")
+	}
+
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
+	if err != nil {
+		fmt.Println(err)
+		out.Write([]byte(fmt.Sprintf("425 Can't open data connection. response for command (%s)\n", line)))
+		return
+	}
+	defer connForDataTransfer.Close()
+	transferData(out, connForDataTransfer, buf, dataType, dataStructure, "list "+itemInfo.Name(), line)
 }
 
 func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType, dataStructure dataStructure, message, line string) {
