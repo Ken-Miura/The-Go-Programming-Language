@@ -202,17 +202,17 @@ func handleConn(c net.Conn) {
 func port(out io.Writer, arg, line string) (string, int) {
 	IPv4AndPort := strings.Split(arg, ",")
 	clientIP := IPv4AndPort[0] + "." + IPv4AndPort[1] + "." + IPv4AndPort[2] + "." + IPv4AndPort[3]
-	firstSegmentOfPortNum, err := strconv.ParseInt(IPv4AndPort[4], 10, 0)
+	first, err := strconv.ParseInt(IPv4AndPort[4], 10, 0)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 		return "", -1
 	}
-	secondSegmentOfPortNum, err := strconv.ParseInt(IPv4AndPort[5], 10, 0)
+	second, err := strconv.ParseInt(IPv4AndPort[5], 10, 0)
 	if err != nil {
 		out.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 		return "", -1
 	}
-	clientPortForDataTransfer := int(firstSegmentOfPortNum)*256 + int(secondSegmentOfPortNum)
+	clientPortForDataTransfer := int(first)*256 + int(second)
 	if clientPortForDataTransfer < 0 || clientPortForDataTransfer > 65535 {
 		out.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
 		return "", -1
