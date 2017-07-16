@@ -12,6 +12,14 @@ import (
 
 func main() {
 	db := database{Mapping: map[string]dollars{"shoes": 50, "socks": 5}}
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		fmt.Println(writer, "usage")
+		fmt.Fprintln(writer, "http://localhost:8000/list")
+		fmt.Fprintln(writer, "http://localhost:8000/price?item='item name'")
+		fmt.Fprintln(writer, "http://localhost:8000/create?item='item name'&price='price'")
+		fmt.Fprintln(writer, "http://localhost:8000/update?item='item name'&price='price'")
+		fmt.Fprintln(writer, "http://localhost:8000/delete?item='item name'")
+	})
 	http.HandleFunc("/list", db.list)
 	http.HandleFunc("/price", db.price)
 	http.HandleFunc("/create", db.create)
