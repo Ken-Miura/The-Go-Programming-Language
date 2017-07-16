@@ -47,11 +47,11 @@ func processSequentially(img *image.RGBA, height, width int, xmin, xmax, ymin, y
 			img.Set(px, py, mandelbrot(z))
 		}
 	}
-	fmt.Fprintf(os.Stderr, "time for creating mandelbrot image sequentially: %s", time.Since(start))
+	fmt.Fprintf(os.Stderr, "time for creating mandelbrot image sequentially: %s\n", time.Since(start))
 }
 
 // サンプルコードのfloat64を使ったmandelbrot関数だと並列に実施した方が逐次処理より遅かった。
-// TODO より処理の重い関数で実施
+// より処理の重い関数をエミュレートするため、time.Sleepをmandelbrot内で記述し、実施すると複数ゴルーチンで処理した方がよくなった。
 func processInParallel(img *image.RGBA, height, width int, xmin, xmax, ymin, ymax float64) {
 	type colorPoint struct {
 		x int
@@ -84,7 +84,7 @@ func processInParallel(img *image.RGBA, height, width int, xmin, xmax, ymin, yma
 	for cp := range ch {
 		img.Set(cp.x, cp.y, cp.c)
 	}
-	fmt.Fprintf(os.Stderr, "time for creating mandelbrot image in parallel: %s", time.Since(start))
+	fmt.Fprintf(os.Stderr, "time for creating mandelbrot image in parallel: %s\n", time.Since(start))
 }
 
 func mandelbrot(z complex128) color.Color {
