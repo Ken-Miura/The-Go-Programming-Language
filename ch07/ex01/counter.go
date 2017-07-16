@@ -14,6 +14,9 @@ func (c *WordCounter) Write(p []byte) (int, error) {
 	input.Split(bufio.ScanWords)
 	count := 0
 	for input.Scan() {
+		if err := input.Err(); err != nil {
+			return count, err
+		}
 		count++
 	}
 	return count, nil
@@ -27,6 +30,9 @@ func (c *LineCounter) Write(p []byte) (int, error) {
 	input := bufio.NewScanner(bytes.NewReader(p))
 	count := 0
 	for input.Scan() {
+		if err := input.Err(); err != nil {
+			return count, err
+		}
 		count++
 	}
 	return count, nil
