@@ -7,35 +7,49 @@ import (
 	"io"
 )
 
-type WordCounter int
+type WordCounter struct {
+	wordCount int
+}
 
 func (c *WordCounter) Write(p []byte) (int, error) {
 	input := bufio.NewScanner(bytes.NewReader(p))
 	input.Split(bufio.ScanWords)
-	count := 0
+	tmpWordCount := 0
 	for input.Scan() {
 		if err := input.Err(); err != nil {
-			return count, err
+			return 0, err
 		}
-		count++
+		tmpWordCount++
 	}
-	return count, nil
+	c.wordCount = c.wordCount + tmpWordCount
+	return len(p), nil
+}
+
+func (c *WordCounter) WordCount() int {
+	return c.wordCount
 }
 
 var _ io.Writer = (*WordCounter)(nil)
 
-type LineCounter int
+type LineCounter struct {
+	lineCount int
+}
 
 func (c *LineCounter) Write(p []byte) (int, error) {
 	input := bufio.NewScanner(bytes.NewReader(p))
-	count := 0
+	tmpLineCount := 0
 	for input.Scan() {
 		if err := input.Err(); err != nil {
-			return count, err
+			return 0, err
 		}
-		count++
+		tmpLineCount++
 	}
-	return count, nil
+	c.lineCount = c.lineCount + tmpLineCount
+	return len(p), nil
+}
+
+func (c *LineCounter) LineCount() int {
+	return c.lineCount
 }
 
 var _ io.Writer = (*LineCounter)(nil)
