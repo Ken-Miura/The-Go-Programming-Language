@@ -48,7 +48,7 @@ func ConstructXmlNodeTree(r io.Reader) (Node, error) {
 	for {
 		tok, err := dec.Token()
 		if err == io.EOF {
-			break
+			return rootNode, nil
 		} else if err != nil {
 			return nil, err
 		}
@@ -71,7 +71,9 @@ func ConstructXmlNodeTree(r io.Reader) (Node, error) {
 			if ok {
 				element.Children = append(element.Children, CharData(tok))
 			}
+		default:
+			// その他のトークンは無視
 		}
 	}
-	return rootNode, nil
+	panic("This line must not be reached.")
 }
