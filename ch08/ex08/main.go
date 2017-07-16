@@ -33,7 +33,10 @@ func handleConn(c net.Conn) {
 					// do nothing
 				}
 				return
-			case <-event:
+			case _, ok := <-event:
+				if !ok {
+					return
+				}
 			}
 		}
 	}()

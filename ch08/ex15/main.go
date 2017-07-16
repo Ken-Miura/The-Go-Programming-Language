@@ -80,8 +80,11 @@ func handleConn(conn net.Conn) {
 				for range event {
 					// do nothing
 				}
-				break
-			case <-event:
+				return
+			case _, ok := <-event:
+				if !ok {
+					return
+				}
 			}
 		}
 	}()
