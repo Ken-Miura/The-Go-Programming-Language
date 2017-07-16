@@ -32,6 +32,7 @@ func (x ByLength) Len() int           { return len(x) }
 func (x ByLength) Less(i, j int) bool { return x[i].Length < x[j].Length }
 func (x ByLength) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
+// SortKeysは、添え字の大きい要素ほど優先度の高いキーを意味する。
 type CustomSort struct {
 	SortKeys []string
 	T        []*Track
