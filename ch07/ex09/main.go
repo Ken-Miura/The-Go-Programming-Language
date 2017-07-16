@@ -18,37 +18,40 @@ func main() {
 		defer customSortTracks.Unlock()
 		printTracks(w, customSortTracks)
 	})
-	http.HandleFunc("/sort_by_title", sortByTitle)
-	http.HandleFunc("/sort_by_artist", sortByArtist)
-	http.HandleFunc("/sort_by_album", sortByAlbum)
-	http.HandleFunc("/sort_by_year", sortByYear)
-	http.HandleFunc("/sort_by_length", sortByLength)
+	http.HandleFunc("/sort_by_title", func(w http.ResponseWriter, request *http.Request) {
+		customSortTracks.Lock()
+		defer customSortTracks.Unlock()
+		sortBy("Title")
+		printTracks(w, customSortTracks)
+	})
+	http.HandleFunc("/sort_by_artist", func(w http.ResponseWriter, request *http.Request) {
+		customSortTracks.Lock()
+		defer customSortTracks.Unlock()
+		sortBy("Artist")
+		printTracks(w, customSortTracks)
+	})
+	http.HandleFunc("/sort_by_album", func(w http.ResponseWriter, request *http.Request) {
+		customSortTracks.Lock()
+		defer customSortTracks.Unlock()
+		sortBy("Album")
+		printTracks(w, customSortTracks)
+	})
+	http.HandleFunc("/sort_by_year", func(w http.ResponseWriter, request *http.Request) {
+		customSortTracks.Lock()
+		defer customSortTracks.Unlock()
+		sortBy("Year")
+		printTracks(w, customSortTracks)
+	})
+	http.HandleFunc("/sort_by_length", func(w http.ResponseWriter, request *http.Request) {
+		customSortTracks.Lock()
+		defer customSortTracks.Unlock()
+		sortBy("Length")
+		printTracks(w, customSortTracks)
+	})
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
-func sortByTitle(w http.ResponseWriter, _ *http.Request) {
-	sortBy("Title", w)
-}
-
-func sortByArtist(w http.ResponseWriter, _ *http.Request) {
-	sortBy("Artist", w)
-}
-
-func sortByAlbum(w http.ResponseWriter, _ *http.Request) {
-	sortBy("Album", w)
-}
-
-func sortByYear(w http.ResponseWriter, _ *http.Request) {
-	sortBy("Year", w)
-}
-
-func sortByLength(w http.ResponseWriter, _ *http.Request) {
-	sortBy("Length", w)
-}
-
-func sortBy(key string, w http.ResponseWriter) {
-	customSortTracks.Lock()
-	defer customSortTracks.Unlock()
+func sortBy(key string) {
 	for i, sortKey := range customSortTracks.SortKeys {
 		if sortKey == key {
 			remove(customSortTracks.SortKeys, i)
@@ -56,7 +59,6 @@ func sortBy(key string, w http.ResponseWriter) {
 	}
 	customSortTracks.SortKeys = append(customSortTracks.SortKeys, key)
 	sort.Sort(customSortTracks)
-	printTracks(w, customSortTracks)
 }
 
 func remove(slice []string, i int) []string {
