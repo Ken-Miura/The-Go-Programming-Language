@@ -1,0 +1,9 @@
+go run main.go -format=gif <gif.GIF >gifToGif.GIF
+go run main.go -format=jpeg <gif.GIF >gifToJpeg.jpeg
+go run main.go -format=png <gif.GIF >gifToPng.png
+go run main.go -format=gif <jpeg.JPG >jpegToGif.GIF
+go run main.go -format=jpeg <jpeg.JPG >jpegToJpeg.jpeg
+go run main.go -format=png <jpeg.JPG >jpegToPng.png
+go run main.go -format=gif <png.png >pngToGif.GIF
+go run main.go -format=jpeg <png.png >pngToJpeg.jpeg
+go run main.go -format=png <png.png >pngToPng.png
