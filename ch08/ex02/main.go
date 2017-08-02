@@ -25,14 +25,8 @@ func init() {
 }
 
 func main() {
-	if *portForControlConnection < 0 {
-		fmt.Println("Port number must be 0 or more.")
-		return
-	}
-	if *ip == "" {
-		fmt.Println("IP address must not be empty.")
-		fmt.Println("usage: " + os.Args[0] + " -ip 'IPv4 address'")
-		fmt.Println("ex: " + os.Args[0] + " -ip 192.168.0.5")
+	if *portForControlConnection < 0 || *portForControlConnection > 65535 {
+		fmt.Println("Port number must be '0 <= port number <= 65535'.")
 		return
 	}
 	if strings.Contains(*ip, ":") { // IPv6のとき[]で囲む必要があるため、IPv6かどうかの判定
