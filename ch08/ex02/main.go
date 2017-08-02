@@ -200,7 +200,12 @@ func handleConn(c net.Conn) {
 				defer wg.Done()
 				list(c, ".", clientIP, clientPortForDataTransfer, dataType, dataStructure, line)
 			}()
-
+		case "PWD":
+			if len(args) != 0 {
+				c.Write([]byte(fmt.Sprintf("501 Syntax error in parameters or arguments. response for command (%s)\n", line)))
+				break
+			}
+			c.Write([]byte(fmt.Sprintf("257 \"/\" is current directory. response for command (%s)\n", line)))
 		default:
 			c.Write([]byte(fmt.Sprintf("502 Command not implemented. response for command (%s)\n", line)))
 		}
@@ -338,7 +343,7 @@ func list(out io.Writer, item string, clientIP string, clientPort int, dataType 
 	transferData(out, connForDataTransfer, &buf, dataType, dataStructure, "list "+itemInfo.Name(), line)
 }
 
-func transferData(out io.Writer, dst io.Writer, src io.Reader, dataType dataType, dataStructure dataStructure, message, line string) {
+func transferData(out, dst io.Writer, src io.Reader, dataType dataType, dataStructure dataStructure, message, line string) {
 	out.Write([]byte(fmt.Sprintf("125 Data connection already open; transfer starting. response for command (%s)\n", line)))
 	var err error
 	if dataType == ASCII && dataStructure == RECORD {
