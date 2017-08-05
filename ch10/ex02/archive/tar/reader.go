@@ -14,8 +14,7 @@ import (
 )
 
 func init() {
-	archive.RegisterFormat("tar", 0x101, "ustar.00", extract)
-	archive.RegisterFormat("tar", 0x101, "ustar  .", extract)
+	archive.RegisterFormat("tar", 0x101, "ustar", extract)
 }
 
 func extract(fileName string) ([]archive.Item, error) {
