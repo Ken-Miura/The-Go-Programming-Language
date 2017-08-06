@@ -60,8 +60,9 @@ func findDependencies(importPath string) ([]string, error) {
 		return nil, err
 	}
 	type packageInfo struct {
-		Name string
-		Deps []string
+		Name       string
+		ImportPath string
+		Deps       []string
 	}
 	var allPkgs []packageInfo
 	if err := json.NewDecoder(strings.NewReader(pkgsString)).Decode(&allPkgs); err != nil {
@@ -72,7 +73,7 @@ loop:
 	for _, pkg := range allPkgs {
 		for _, dep := range pkg.Deps {
 			if dep == importPath {
-				dependencies = append(dependencies, pkg.Name)
+				dependencies = append(dependencies, pkg.Name+" (import path: "+pkg.ImportPath+")")
 				continue loop
 			}
 		}
@@ -82,7 +83,7 @@ loop:
 
 func getAllPackageInfoAsJson() (string, error) {
 	cmd := exec.Command("go", "list", "-f",
-		`{ "Name":"{{.Name}}", "Deps":["{{ join .Deps "\", \"" }}"]},`, "...") // ...1
+		`{ "Name":"{{.Name}}", "ImportPath":"{{.ImportPath}}", "Deps":["{{ join .Deps "\", \"" }}"]},`, "...") // ...1
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", fmt.Errorf("failed to connect with %s's stdout: %v", cmd.Args[0], err)
