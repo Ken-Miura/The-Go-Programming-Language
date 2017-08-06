@@ -16,38 +16,39 @@ func randomNotPalindrome(rng *rand.Rand) string {
 	n := rng.Intn(23)
 	n += 2 // 2以上24以下の長さ. 長さ0と1は文字列に関係なく回文となるので除外。
 	runes := make([]rune, n)
-	for i := 0; i < (n+1)/2; i++ {
-		r := rune(rng.Intn(0x1000)) // random rune up to '\u0999'
-		runes[i] = r
-		runes[n-1-i] = r
-	}
-
-	// 回文の前半分を現在の文字とは異なる文字に変更
-	for i := 0; i < (n+1)/2; i++ {
-		for {
-			r := rune(rng.Intn(0x1000))                                                   // random rune up to '\u0999'
-			if unicode.IsLetter(r) && (unicode.ToLower(runes[i]) != unicode.ToLower(r)) { // 回文判定は、文字以外は無視する、かつ大文字小文字の違いも無視する
-				runes[i] = r
-				break
-			}
-		}
-	}
-	// 回文の後ろ半分がすべて非文字のとき、後ろ半分が無視され、前半分だけが考慮されて回文になりえる。なので後ろ半分がすべて非文字だったら修正
-	allNonLetter := true
-	for i := 0; i < (n+1)/2; i++ {
-		allNonLetter = allNonLetter && !unicode.IsLetter(runes[n-1-i])
-	}
-	if allNonLetter {
-		i := rng.Intn((n + 1) / 2)
-		for {
+	for {
+		for i := 0; i < n; i++ {
 			r := rune(rng.Intn(0x1000)) // random rune up to '\u0999'
-			if unicode.IsLetter(r) {    // 文字以外は代入しても無視されるので文字を入れる。
-				runes[n-1-i] = r
-				break
+			runes[i] = r
+		}
+		// 全部非文字だったら回文になる。
+		if isOnlyNonLetters(runes) {
+			continue
+		}
+		// 前半分か後ろ半分が全部非文字だと回文になっている可能性がある
+		if isOnlyNonLetters(runes[0:n/2]) || isOnlyNonLetters(runes[n/2:n]) {
+			continue
+		}
+
+		palindrome := true
+		for i := 0; i < (n+1)/2; i++ {
+			if unicode.ToLower(runes[i]) != unicode.ToLower(runes[n-i-1]) {
+				palindrome = false
 			}
 		}
+		if palindrome {
+			continue
+		}
+		return string(runes)
 	}
-	return string(runes)
+}
+
+func isOnlyNonLetters(runes []rune) bool {
+	result := true
+	for _, r := range runes {
+		result = result && !unicode.IsLetter(r)
+	}
+	return result
 }
 
 func TestRandomNotPalindromes(t *testing.T) {
