@@ -7,6 +7,31 @@ import (
 	"github.com/Ken-Miura/The-Go-Programming-Language/ch06/ex05"
 )
 
+func TestIntSet_UnionWith(t *testing.T) {
+	tests := []struct {
+		receiver *ex05.IntSet
+		input    *ex05.IntSet
+		expected map[int]bool
+	}{
+		{ex05.NewIntSet(), ex05.NewIntSet(), map[int]bool{}},
+		{ex05.NewIntSet(), ex05.NewIntSet(64), map[int]bool{64: true}},
+		{ex05.NewIntSet(0), ex05.NewIntSet(0), map[int]bool{0: true}},
+		{ex05.NewIntSet(0, 63, 128), ex05.NewIntSet(0, 64, 127), map[int]bool{0: true, 63: true, 64: true, 127: true, 128: true}},
+	}
+
+	for _, test := range tests {
+		test.receiver.UnionWith(test.input)
+		if test.receiver.Len() != len(test.expected) {
+			t.Fatalf("(*IntSet).Len() in (*IntSet).UnionWith(*IntSet) failed: expected is %d but actual is %d", len(test.expected), test.receiver.Len())
+		}
+		for integer := range test.expected {
+			if !test.receiver.Has(integer) {
+				t.Fatalf("(*IntSet).Has() in (*IntSet).UnionWith(*IntSet) failed: receiver is expected to have %d", integer)
+			}
+		}
+	}
+}
+
 func TestIntSet_IntersectWith(t *testing.T) {
 	tests := []struct {
 		receiver *ex05.IntSet
