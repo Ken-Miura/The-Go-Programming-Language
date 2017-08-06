@@ -10,15 +10,80 @@ import (
 	"github.com/Ken-Miura/The-Go-Programming-Language/ch11/ex01"
 )
 
-var tests = []struct {
+type testCase struct {
 	input io.Reader
 	want1 map[rune]int
 	want2 [utf8.UTFMax + 1]int
 	want3 int
 	want4 error
-}{
+}
+
+var tests = []testCase{
 	{strings.NewReader(""), make(map[rune]int), [utf8.UTFMax + 1]int{}, 0, nil},
-	{strings.NewReader("a"), make(map[rune]int), [utf8.UTFMax + 1]int{}, 0, nil},
+}
+
+func init() {
+	createTestCase2()
+	createTestCase3()
+	createTestCase4()
+}
+
+func createTestCase2() {
+	r := strings.NewReader("hello world")
+
+	counts := make(map[rune]int)
+	counts['h'] = 1
+	counts['e'] = 1
+	counts['l'] = 3
+	counts['o'] = 2
+	counts[' '] = 1
+	counts['w'] = 1
+	counts['r'] = 1
+	counts['d'] = 1
+
+	countsOfEnc := [utf8.UTFMax + 1]int{0, 11, 0, 0, 0}
+
+	countInvalidChar := 0
+
+	var err error = nil
+
+	tests = append(tests, testCase{r, counts, countsOfEnc, countInvalidChar, err})
+}
+
+func createTestCase3() {
+	r := strings.NewReader("こんにちは、世界")
+
+	counts := make(map[rune]int)
+	counts['こ'] = 1
+	counts['ん'] = 1
+	counts['に'] = 1
+	counts['ち'] = 1
+	counts['は'] = 1
+	counts['、'] = 1
+	counts['世'] = 1
+	counts['界'] = 1
+
+	countsOfEnc := [utf8.UTFMax + 1]int{0, 0, 0, 8, 0}
+
+	countInvalidChar := 0
+
+	var err error = nil
+
+	tests = append(tests, testCase{r, counts, countsOfEnc, countInvalidChar, err})
+}
+
+func createTestCase4() {
+	r := strings.NewReader(string([]byte{0xC0})) // 1バイト文字なのに0x7f以上の値を持つもの
+
+	counts := make(map[rune]int)
+
+	countsOfEnc := [utf8.UTFMax + 1]int{0, 0, 0, 0, 0}
+
+	countInvalidChar := 1
+
+	var err error = nil
+
+	tests = append(tests, testCase{r, counts, countsOfEnc, countInvalidChar, err})
 }
 
 func TestCharCount(t *testing.T) {
@@ -42,7 +107,7 @@ func TestCharCount(t *testing.T) {
 		// counts of lengths of UTF-8 encodings
 		for i := range test.want2 {
 			if got2[i] != test.want2[i] {
-				t.Errorf("counts of lengths of UTF-8 encodings (%d bytes) were wrong (got %d, want %d)", i, got2[i], test.want2[i])
+				t.Errorf("counts of %d bytes UTF-8 encodings were wrong (got %d, want %d)", i, got2[i], test.want2[i])
 			}
 		}
 
