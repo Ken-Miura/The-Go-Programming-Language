@@ -9,54 +9,58 @@ import (
 	"github.com/Ken-Miura/The-Go-Programming-Language/ch06/ex05"
 )
 
-var maxNumOfElems = 1000000
+const maxNumOfElems = 1000000
+const randMax = 4096
 
 func BenchmarkIntSet_UnionWith(t *testing.B) {
-	set1 := ex05.NewIntSet()
-	set2 := ex05.NewIntSet()
-	for i := 0; i < maxNumOfElems; i++ {
-		set1.Add(rand.Intn(4096))
-		set2.Add(rand.Intn(4096))
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		set2 := ex05.NewIntSet()
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(rand.Intn(randMax))
+			set2.Add(rand.Intn(randMax))
+		}
 		set1.UnionWith(set2)
 	}
 }
 
 func BenchmarkSet_UnionWith(t *testing.B) {
-	set1 := make(map[int]bool)
-	set2 := make(map[int]bool)
-	for i := 0; i < maxNumOfElems; i++ {
-		set1[rand.Intn(4096)] = true
-		set2[rand.Intn(4096)] = true
-	}
 	for i := 0; i < t.N; i++ {
-		for i := range set1 {
-			set2[i] = true
+		set1 := make(map[int]bool)
+		set2 := make(map[int]bool)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[rand.Intn(randMax)] = true
+			set2[rand.Intn(randMax)] = true
+		}
+		for i := range set2 {
+			_, ok := set1[i]
+			if !ok {
+				set1[i] = true
+			}
 		}
 	}
 }
 
 func BenchmarkIntSet_IntersectWith(t *testing.B) {
-	set1 := ex05.NewIntSet()
-	set2 := ex05.NewIntSet()
-	for i := 0; i < maxNumOfElems; i++ {
-		set1.Add(rand.Intn(4096))
-		set2.Add(rand.Intn(4096))
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		set2 := ex05.NewIntSet()
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(rand.Intn(randMax))
+			set2.Add(rand.Intn(randMax))
+		}
 		set1.IntersectWith(set2)
 	}
 }
 
 func BenchmarkSet_IntersectWith(t *testing.B) {
-	set1 := make(map[int]bool)
-	set2 := make(map[int]bool)
-	for i := 0; i < maxNumOfElems; i++ {
-		set1[rand.Intn(4096)] = true
-		set2[rand.Intn(4096)] = true
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		set2 := make(map[int]bool)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[rand.Intn(randMax)] = true
+			set2[rand.Intn(randMax)] = true
+		}
 		for i := range set1 {
 			_, ok := set2[i]
 			if !ok {
@@ -67,25 +71,25 @@ func BenchmarkSet_IntersectWith(t *testing.B) {
 }
 
 func BenchmarkIntSet_DifferenceWith(t *testing.B) {
-	set1 := ex05.NewIntSet()
-	set2 := ex05.NewIntSet()
-	for i := 0; i < maxNumOfElems; i++ {
-		set1.Add(rand.Intn(4096))
-		set2.Add(rand.Intn(4096))
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		set2 := ex05.NewIntSet()
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(rand.Intn(randMax))
+			set2.Add(rand.Intn(randMax))
+		}
 		set1.DifferenceWith(set2)
 	}
 }
 
 func BenchmarkSet_DifferenceWith(t *testing.B) {
-	set1 := make(map[int]bool)
-	set2 := make(map[int]bool)
-	for i := 0; i < maxNumOfElems; i++ {
-		set1[rand.Intn(4096)] = true
-		set2[rand.Intn(4096)] = true
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		set2 := make(map[int]bool)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[rand.Intn(randMax)] = true
+			set2[rand.Intn(randMax)] = true
+		}
 		for i := range set2 {
 			_, ok := set1[i]
 			if ok {
@@ -96,30 +100,141 @@ func BenchmarkSet_DifferenceWith(t *testing.B) {
 }
 
 func BenchmarkIntSet_SymmetricDifference(t *testing.B) {
-	set1 := ex05.NewIntSet()
-	set2 := ex05.NewIntSet()
-	for i := 0; i < maxNumOfElems; i++ {
-		set1.Add(rand.Intn(4096))
-		set2.Add(rand.Intn(4096))
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		set2 := ex05.NewIntSet()
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(rand.Intn(randMax))
+			set2.Add(rand.Intn(randMax))
+		}
 		set1.SymmetricDifference(set2)
 	}
 }
 
 func BenchmarkSet_SymmetricDifference(t *testing.B) {
-	set1 := make(map[int]bool)
-	set2 := make(map[int]bool)
-	for i := 0; i < maxNumOfElems; i++ {
-		set1[rand.Intn(4096)] = true
-		set2[rand.Intn(4096)] = true
-	}
 	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		set2 := make(map[int]bool)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[rand.Intn(randMax)] = true
+			set2[rand.Intn(randMax)] = true
+		}
 		for i := range set1 {
 			_, ok := set2[i]
 			if ok {
 				delete(set1, i)
 			}
+		}
+	}
+}
+
+func BenchmarkIntSet_AddAll(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		integers := make([]int, maxNumOfElems)
+		for i := 0; i < maxNumOfElems; i++ {
+			integers = append(integers, rand.Intn(randMax))
+		}
+		set1.AddAll(integers...)
+	}
+}
+
+func BenchmarkSet_AddAll(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		integers := make([]int, maxNumOfElems)
+		for i := 0; i < maxNumOfElems; i++ {
+			integers = append(integers, rand.Intn(randMax))
+		}
+		for _, integer := range integers {
+			set1[integer] = true
+		}
+	}
+}
+
+func BenchmarkIntSet_Len(t *testing.B) {
+	set1 := ex05.NewIntSet()
+	for i := 0; i < maxNumOfElems; i++ {
+		set1.Add(rand.Intn(randMax))
+	}
+	for i := 0; i < t.N; i++ {
+		set1.Len()
+	}
+}
+
+func BenchmarkSet_Len(t *testing.B) {
+	set1 := make(map[int]bool)
+	for i := 0; i < maxNumOfElems; i++ {
+		set1[rand.Intn(randMax)] = true
+	}
+	for i := 0; i < t.N; i++ {
+		_ = len(set1)
+	}
+}
+
+func BenchmarkIntSet_Remove(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		num := rand.Intn(randMax)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(num)
+		}
+		set1.Remove(num)
+	}
+}
+
+func BenchmarkSet_Remove(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		num := rand.Intn(randMax)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[num] = true
+		}
+		delete(set1, num)
+	}
+}
+
+func BenchmarkIntSet_Clear(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(rand.Intn(randMax))
+		}
+		set1.Clear()
+	}
+}
+
+func BenchmarkSet_Clear(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[rand.Intn(randMax)] = true
+		}
+		for i := range set1 {
+			delete(set1, i)
+		}
+	}
+}
+
+func BenchmarkIntSet_Copy(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := ex05.NewIntSet()
+		for i := 0; i < maxNumOfElems; i++ {
+			set1.Add(rand.Intn(randMax))
+		}
+		_ = set1.Copy()
+	}
+}
+
+func BenchmarkSet_Copy(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		set1 := make(map[int]bool)
+		for i := 0; i < maxNumOfElems; i++ {
+			set1[rand.Intn(randMax)] = true
+		}
+		set2 := make(map[int]bool)
+		for i := range set1 {
+			set2[i] = true
 		}
 	}
 }
