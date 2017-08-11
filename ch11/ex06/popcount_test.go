@@ -11,6 +11,24 @@ import (
 	"gopl.io/ch2/popcount"
 )
 
+func BenchmarkPopCountZero(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		popcount.PopCount(0)
+	}
+}
+
+func BenchmarkPopCountByClearingZero(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ex05.PopCountByClearing(0)
+	}
+}
+
+func BenchmarkPopCountByShiftingZero(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ex04.PopCountByShifting(0)
+	}
+}
+
 func BenchmarkPopCount(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		popcount.PopCount(0x1234567890ABCDEF)
@@ -26,6 +44,24 @@ func BenchmarkPopCountByClearing(b *testing.B) {
 func BenchmarkPopCountByShifting(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ex04.PopCountByShifting(0x1234567890ABCDEF)
+	}
+}
+
+func BenchmarkPopCountMax(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		popcount.PopCount(^uint64(0))
+	}
+}
+
+func BenchmarkPopCountByClearingMax(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ex05.PopCountByClearing(^uint64(0))
+	}
+}
+
+func BenchmarkPopCountByShiftingMax(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ex04.PopCountByShifting(^uint64(0))
 	}
 }
 
