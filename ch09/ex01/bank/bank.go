@@ -1,16 +1,26 @@
 // Copyright 2017 Ken Miura
 package bank
 
+import "errors"
+
 var deposits = make(chan int) // send amount to deposit
 var balances = make(chan int) // receive balance
-var withdraw = make(chan int)
-var ok = make(chan bool)
+var withdrawArg = make(chan WithdrawArg)
 
 func Deposit(amount int) { deposits <- amount }
 func Balance() int       { return <-balances }
-func Withdraw(amount int) bool {
-	withdraw <- amount
-	return <-ok
+
+type WithdrawArg struct {
+	Amount int
+	Ok     chan bool
+}
+
+func Withdraw(arg WithdrawArg) error {
+	if arg.Ok == nil {
+		return errors.New("WithdrawArg must not be nil")
+	}
+	withdrawArg <- arg
+	return nil
 }
 
 func teller() {
@@ -20,13 +30,13 @@ func teller() {
 		case amount := <-deposits:
 			balance += amount
 		case balances <- balance:
-		case amount := <-withdraw:
-			balance -= amount
+		case arg := <-withdrawArg:
+			balance -= arg.Amount
 			if balance < 0 {
-				balance += amount
-				ok <- false
+				balance += arg.Amount
+				arg.Ok <- false
 			} else {
-				ok <- true
+				arg.Ok <- true
 			}
 		}
 	}
