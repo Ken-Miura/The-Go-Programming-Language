@@ -1,6 +1,8 @@
 // Copyright 2017 Ken Miura
 package memo
 
+import "errors"
+
 //!+Func
 
 // Func is the type of the function to memoize.
@@ -44,7 +46,7 @@ func (memo *Memo) Get(key string, done <-chan struct{}) (interface{}, error) {
 	case res := <-response:
 		return res.value, res.err
 	case <-done:
-		return nil, nil
+		return nil, errors.New("operation canceled")
 	}
 }
 
