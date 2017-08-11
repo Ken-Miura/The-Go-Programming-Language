@@ -14,7 +14,7 @@ import (
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("usage: " + os.Args[0] + " 'package name'")
-		fmt.Println("usage: " + os.Args[0] + " fmt")
+		fmt.Println("ex: " + os.Args[0] + " fmt")
 		os.Exit(1)
 	}
 
