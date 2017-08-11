@@ -21,34 +21,21 @@ func randomNotPalindrome(rng *rand.Rand) string {
 			r := rune(rng.Intn(0x1000)) // random rune up to '\u0999'
 			runes[i] = r
 		}
-		// 全部非文字だったら回文になる。
-		if isOnlyNonLetters(runes) {
-			continue
-		}
-		// 前半分か後ろ半分が全部非文字だと回文になっている可能性がある
-		if isOnlyNonLetters(runes[0:n/2]) || isOnlyNonLetters(runes[n/2:n]) {
-			continue
-		}
-
-		palindrome := true
-		for i := 0; i < (n+1)/2; i++ {
-			if unicode.ToLower(runes[i]) != unicode.ToLower(runes[n-i-1]) {
-				palindrome = false
-			}
-		}
-		if palindrome {
+		if checkIfRunesAreEqual(runes[0], runes[len(runes)-1]) { // 最初と最後が違えば必ず回文ではなくなる
 			continue
 		}
 		return string(runes)
 	}
 }
 
-func isOnlyNonLetters(runes []rune) bool {
-	result := true
-	for _, r := range runes {
-		result = result && !unicode.IsLetter(r)
+func checkIfRunesAreEqual(r1 rune, r2 rune) bool {
+	if !unicode.IsLetter(r1) || !unicode.IsLetter(r2) {
+		return true
 	}
-	return result
+	if unicode.ToLower(r1) == unicode.ToLower(r2) {
+		return false
+	}
+	return false
 }
 
 func TestRandomNotPalindromes(t *testing.T) {
