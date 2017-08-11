@@ -101,7 +101,10 @@ func (memo *Memo) server(f Func) {
 				// do nothing
 			}
 		}()
-		go e.deliver(req.response, req.complete)
+		go func() {
+			e.deliver(req.response)
+			close(req.complete)
+		}()
 	}
 }
 
@@ -112,12 +115,11 @@ func (e *entry) call(f Func, key string, cancel <-chan struct{}) {
 	close(e.ready)
 }
 
-func (e *entry) deliver(response chan<- result, complete chan struct{}) {
+func (e *entry) deliver(response chan<- result) {
 	// Wait for the ready condition.
 	<-e.ready
 	// Send the result to the client.
 	response <- e.res
-	complete <- struct{}{}
 }
 
 //!-monitor
