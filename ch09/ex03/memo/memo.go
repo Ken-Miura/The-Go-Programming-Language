@@ -1,12 +1,15 @@
 // Copyright 2017 Ken Miura
 package memo
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 //!+Func
 
 // Func is the type of the function to memoize.
-type Func func(key string) (interface{}, error)
+type Func func(key string, cancel <-chan struct{}) (interface{}, error)
 
 // A result is the result of calling a Func.
 type result struct {
@@ -27,7 +30,8 @@ type entry struct {
 type request struct {
 	key      string
 	response chan<- result // the client wants a single result
-	done     <-chan struct{}
+	complete chan struct{}
+	cancel   <-chan struct{}
 }
 
 type Memo struct{ requests chan request }
@@ -39,13 +43,13 @@ func New(f Func) *Memo {
 	return memo
 }
 
-func (memo *Memo) Get(key string, done <-chan struct{}) (interface{}, error) {
+func (memo *Memo) Get(key string, cancel <-chan struct{}) (interface{}, error) {
 	response := make(chan result)
-	memo.requests <- request{key, response, done}
+	memo.requests <- request{key, response, make(chan struct{}), cancel}
 	select {
 	case res := <-response:
 		return res.value, res.err
-	case <-done:
+	case <-cancel:
 		return nil, errors.New("operation canceled")
 	}
 }
@@ -54,40 +58,66 @@ func (memo *Memo) Close() { close(memo.requests) }
 
 //!-get
 
-//!+monitor
+type cache struct {
+	sync.Mutex
+	mapping map[string]*entry
+}
 
+func (c *cache) get(key string) (*entry, bool) {
+	defer c.Unlock()
+	c.Lock()
+	e, ok := c.mapping[key]
+	return e, ok
+}
+
+func (c *cache) put(key string, e *entry) {
+	defer c.Unlock()
+	c.Lock()
+	c.mapping[key] = e
+}
+
+func (c *cache) delete(key string) {
+	defer c.Unlock()
+	c.Lock()
+	delete(c.mapping, key)
+}
+
+//!+monitor
 func (memo *Memo) server(f Func) {
-	cache := make(map[string]*entry)
+	cacheMap := &cache{sync.Mutex{}, make(map[string]*entry)}
 	for req := range memo.requests {
-		e := cache[req.key]
+		e, _ := cacheMap.get(req.key)
 		if e == nil {
 			// This is the first request for this key.
 			e = &entry{ready: make(chan struct{})}
-			select {
-			case <-req.done:
-				continue
-			default:
-				break
-			}
-			cache[req.key] = e
-			go e.call(f, req.key) // call f(key)
+			cacheMap.put(req.key, e)
+			go e.call(f, req.key, req.cancel) // call f(key)
 		}
-		go e.deliver(req.response)
+		go func() {
+			select {
+			case <-req.cancel:
+				cacheMap.delete(req.key)
+			case <-req.complete:
+				// do nothing
+			}
+		}()
+		go e.deliver(req.response, req.complete)
 	}
 }
 
-func (e *entry) call(f Func, key string) {
+func (e *entry) call(f Func, key string, cancel <-chan struct{}) {
 	// Evaluate the function.
-	e.res.value, e.res.err = f(key)
+	e.res.value, e.res.err = f(key, cancel)
 	// Broadcast the ready condition.
 	close(e.ready)
 }
 
-func (e *entry) deliver(response chan<- result) {
+func (e *entry) deliver(response chan<- result, complete chan struct{}) {
 	// Wait for the ready condition.
 	<-e.ready
 	// Send the result to the client.
 	response <- e.res
+	complete <- struct{}{}
 }
 
 //!-monitor
