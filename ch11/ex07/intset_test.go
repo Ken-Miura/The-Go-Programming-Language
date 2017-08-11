@@ -2,15 +2,19 @@
 package ex02_test
 
 import (
-	"testing"
-
 	"math/rand"
+	"testing"
 
 	"github.com/Ken-Miura/The-Go-Programming-Language/ch06/ex05"
 )
 
 const maxNumOfElems = 1000000
 const randMax = 4096
+const seed = 1023
+
+func init() {
+	rand.Seed(seed)
+}
 
 func BenchmarkIntSet_UnionWith(t *testing.B) {
 	set1 := ex05.NewIntSet()
