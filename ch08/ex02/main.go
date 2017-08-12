@@ -241,7 +241,7 @@ func stor(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 		return
 	}
 	defer f.Close()
-	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip)}}
 	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
 	if err != nil {
 		fmt.Println(err)
@@ -259,7 +259,7 @@ func retr(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 		return
 	}
 	defer f.Close()
-	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip)}}
 	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
 	if err != nil {
 		fmt.Println(err)
@@ -283,7 +283,7 @@ func stou(out io.Writer, fileName string, clientIP string, clientPort int, dataT
 		return
 	}
 	defer f.Close()
-	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip)}}
 	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
 	if err != nil {
 		fmt.Println(err)
@@ -332,7 +332,7 @@ func list(out io.Writer, item string, clientIP string, clientPort int, dataType 
 		buf.WriteString("\n")
 	}
 
-	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip), Port: *portForControlConnection - 1}}
+	d := net.Dialer{LocalAddr: &net.TCPAddr{IP: net.ParseIP(*ip)}}
 	connForDataTransfer, err := d.Dial("tcp", fmt.Sprintf("%s:%d", clientIP, clientPort))
 	if err != nil {
 		fmt.Println(err)
