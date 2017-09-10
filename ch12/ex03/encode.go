@@ -98,15 +98,12 @@ func encode(buf *bytes.Buffer, v reflect.Value) error {
 		fmt.Fprintf(buf, "#C(%g %g)", real(v.Complex()), imag(v.Complex()))
 
 	case reflect.Interface:
-		buf.WriteString("#I(")
-		buf.WriteString(v.Type().String())
-		buf.WriteString(" (")
-		buf.WriteString(v.Elem().Type().String())
+		buf.WriteString("I(")
+		buf.WriteString(fmt.Sprintf("%q", v.Elem().Type().String()))
 		buf.WriteByte(' ')
 		if err := encode(buf, v.Elem()); err != nil {
 			return err
 		}
-		buf.WriteByte(')')
 		buf.WriteByte(')')
 
 	default: // chan, func

@@ -9,6 +9,10 @@ import (
 	"text/scanner"
 )
 
+var supportedType = map[string]bool{
+	"int": true,
+}
+
 //!+Unmarshal
 // Unmarshal parses S-expression data and populates the variable
 // whose address is in the non-nil pointer out.
@@ -79,6 +83,12 @@ func read(lex *lexer, v reflect.Value) {
 		} else if symbol == "t" {
 			v.SetBool(true)
 			lex.next()
+			return
+		} else if symbol == "I" {
+			lex.next() // consume 'I'
+			lex.next() // consume '('
+			lex.next() // consume "type name"
+			read(lex, v)
 			return
 		}
 	case scanner.String:

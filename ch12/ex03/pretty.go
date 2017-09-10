@@ -187,17 +187,14 @@ func pretty(p *printer, v reflect.Value) error {
 	case reflect.Complex64, reflect.Complex128:
 		p.stringf("#C(%g %g)", real(v.Complex()), imag(v.Complex()))
 
-	//case reflect.Interface:
-	//	buf.WriteString("#I(")
-	//	buf.WriteString(v.Type().String())
-	//	buf.WriteString(" (")
-	//	buf.WriteString(v.Elem().Type().String())
-	//	buf.WriteByte(' ')
-	//	if err := encode(buf, v.Elem()); err != nil {
-	//		return err
-	//	}
-	//	buf.WriteByte(')')
-	//	buf.WriteByte(')')
+	case reflect.Interface:
+		p.string("I(")
+		p.string(fmt.Sprintf("%q", v.Elem().Type().String()))
+		p.string(" ")
+		if err := pretty(p, v.Elem()); err != nil {
+			return err
+		}
+		p.string(")")
 
 	default: // chan, func
 		return fmt.Errorf("unsupported type: %s", v.Type())
