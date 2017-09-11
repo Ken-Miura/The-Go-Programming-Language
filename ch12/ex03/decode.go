@@ -9,9 +9,20 @@ import (
 	"text/scanner"
 )
 
-//!+Unmarshal
-// Unmarshal parses S-expression data and populates the variable
-// whose address is in the non-nil pointer out.
+var TypeCache = make(map[string]reflect.Type)
+
+type Movie struct {
+	Title, Subtitle string
+	Year            int
+	Actor           map[string]string
+	Oscars          []string
+	Sequel          *string
+}
+
+func init() {
+	TypeCache["ex03.Movie"] = reflect.TypeOf(Movie{})
+}
+
 func Unmarshal(data []byte, out interface{}) (err error) {
 	lex := &lexer{scan: scanner.Scanner{Mode: scanner.GoTokens}}
 	lex.scan.Init(bytes.NewReader(data))
@@ -26,9 +37,6 @@ func Unmarshal(data []byte, out interface{}) (err error) {
 	return nil
 }
 
-//!-Unmarshal
-
-//!+lexer
 type lexer struct {
 	scan  scanner.Scanner
 	token rune // the current token
@@ -44,30 +52,6 @@ func (lex *lexer) consume(want rune) {
 	lex.next()
 }
 
-//!-lexer
-
-// The read function is a decoder for a small subset of well-formed
-// S-expressions.  For brevity of our example, it takes many dubious
-// shortcuts.
-//
-// The parser assumes
-// - that the S-expression input is well-formed; it does no error checking.
-// - that the S-expression input corresponds to the type of the variable.
-// - that all numbers in the input are non-negative decimal integers.
-// - that all keys in ((key value) ...) struct syntax are unquoted symbols.
-// - that the input does not contain dotted lists such as (1 2 . 3).
-// - that the input does not contain Lisp reader macros such 'x and #'x.
-//
-// The reflection logic assumes
-// - that v is always a variable of the appropriate type for the
-//   S-expression value.  For example, v must not be a boolean,
-//   interface, channel, or function, and if v is an array, the input
-//   must have the correct number of elements.
-// - that v in the top-level call to read has the zero value of its
-//   type and doesn't need clearing.
-// - that if v is a numeric variable, it is a signed integer.
-
-//!+read
 func read(lex *lexer, v reflect.Value) {
 	switch lex.token {
 	case scanner.Ident:
@@ -79,12 +63,6 @@ func read(lex *lexer, v reflect.Value) {
 		} else if symbol == "t" {
 			v.SetBool(true)
 			lex.next()
-			return
-		} else if symbol == "I" {
-			lex.next() // consume 'I'
-			lex.next() // consume '('
-			lex.next() // consume "type name"
-			read(lex, v)
 			return
 		}
 	case scanner.String:
@@ -122,9 +100,6 @@ func read(lex *lexer, v reflect.Value) {
 	panic(fmt.Sprintf("unexpected token %q", lex.text()))
 }
 
-//!-read
-
-//!+readlist
 func readList(lex *lexer, v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Array: // (item ...)
@@ -163,6 +138,17 @@ func readList(lex *lexer, v reflect.Value) {
 			lex.consume(')')
 		}
 
+	case reflect.Interface:
+		typeName, _ := strconv.Unquote(lex.text()) // NOTE: ignoring errors
+		typ, ok := TypeCache[typeName]
+		if !ok {
+			panic(fmt.Sprintf("unsupported type %q", typeName))
+		}
+		lex.next() // consume "type name"
+		rv := reflect.New(typ).Elem()
+		read(lex, rv)
+		v.Set(rv)
+
 	default:
 		panic(fmt.Sprintf("cannot decode list into %v", v.Type()))
 	}
@@ -177,5 +163,3 @@ func endList(lex *lexer) bool {
 	}
 	return false
 }
-
-//!-readlist

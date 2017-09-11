@@ -188,13 +188,13 @@ func pretty(p *printer, v reflect.Value) error {
 		p.stringf("#C(%g %g)", real(v.Complex()), imag(v.Complex()))
 
 	case reflect.Interface:
-		p.string("I(")
+		p.begin()
 		p.string(fmt.Sprintf("%q", v.Elem().Type().String()))
-		p.string(" ")
+		p.space()
 		if err := pretty(p, v.Elem()); err != nil {
 			return err
 		}
-		p.string(")")
+		p.end()
 
 	default: // chan, func
 		return fmt.Errorf("unsupported type: %s", v.Type())

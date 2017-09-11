@@ -7,8 +7,6 @@ import (
 	"reflect"
 )
 
-//!+Marshal
-// Marshal encodes a Go value in S-expression form.
 func Marshal(v interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := encode(&buf, reflect.ValueOf(v)); err != nil {
@@ -17,10 +15,6 @@ func Marshal(v interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-//!-Marshal
-
-// encode writes to buf an S-expression representation of v.
-//!+encode
 func encode(buf *bytes.Buffer, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Invalid:
@@ -98,18 +92,20 @@ func encode(buf *bytes.Buffer, v reflect.Value) error {
 		fmt.Fprintf(buf, "#C(%g %g)", real(v.Complex()), imag(v.Complex()))
 
 	case reflect.Interface:
-		buf.WriteString("I(")
-		buf.WriteString(fmt.Sprintf("%q", v.Elem().Type().String()))
-		buf.WriteByte(' ')
-		if err := encode(buf, v.Elem()); err != nil {
-			return err
+		if v.IsNil() {
+			buf.WriteString("nil")
+		} else {
+			buf.WriteString("(")
+			buf.WriteString(fmt.Sprintf("%q", v.Elem().Type().String()))
+			buf.WriteByte(' ')
+			if err := encode(buf, v.Elem()); err != nil {
+				return err
+			}
+			buf.WriteByte(')')
 		}
-		buf.WriteByte(')')
 
 	default: // chan, func
 		return fmt.Errorf("unsupported type: %s", v.Type())
 	}
 	return nil
 }
-
-//!-encode

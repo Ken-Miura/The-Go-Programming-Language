@@ -31,7 +31,7 @@ func TestInterface(t *testing.T) {
 	t.Logf("Marshal() = %s\n", data)
 
 	// Decode it
-	var decodedI Movie
+	var decodedI interface{}
 	if err := Unmarshal(data, &decodedI); err != nil {
 		t.Fatalf("Unmarshal failed: %v", err)
 	}
@@ -195,16 +195,6 @@ func testComplex128(t *testing.T) {
 	t.Logf("MarshalIdent() = %s\n", data)
 }
 
-// Test verifies that encoding and decoding a complex data value
-// produces an equal result.
-//
-// The test does not make direct assertions about the encoded output
-// because the output depends on map iteration order, which is
-// nondeterministic.  The output of the t.Log statements can be
-// inspected by running the test with the -v flag:
-//
-// 	$ go test -v gopl.io/ch12/sexpr
-//
 func Test(t *testing.T) {
 	// Encode it
 	data, err := Marshal(strangelove)
@@ -231,14 +221,6 @@ func Test(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("MarshalIdent() = %s\n", data)
-}
-
-type Movie struct {
-	Title, Subtitle string
-	Year            int
-	Actor           map[string]string
-	Oscars          []string
-	Sequel          *string
 }
 
 var strangelove = Movie{
