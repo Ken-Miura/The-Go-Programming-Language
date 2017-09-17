@@ -25,13 +25,9 @@ func Pack(v interface{}) string {
 
 	var buf bytes.Buffer
 	i := 0
-label:
 	for key, values := range fields {
-		for _, v := range values {
-			if !checkIfValueIsDefault(v) {
-				break
-			}
-			continue label
+		if checkIfAllValuesAreDefault(values) {
+			continue
 		}
 		if i > 0 {
 			buf.WriteByte('&')
@@ -47,6 +43,15 @@ label:
 		i++
 	}
 	return buf.String()
+}
+
+func checkIfAllValuesAreDefault(values []reflect.Value) bool {
+	for _, v := range values {
+		if !checkIfValueIsDefault(v) {
+			return false
+		}
+	}
+	return true
 }
 
 func checkIfValueIsDefault(v reflect.Value) bool {
