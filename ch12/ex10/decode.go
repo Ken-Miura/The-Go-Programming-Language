@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Miura
-package ex03
+package ex10
 
 import (
 	"bytes"

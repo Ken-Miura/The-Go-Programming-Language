@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Miura
-package ex03
+package ex10
 
 // This file implements the algorithm described in Derek C. Oppen's
 // 1979 Stanford technical report, "Pretty Printing".
