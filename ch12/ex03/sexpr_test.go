@@ -6,6 +6,26 @@ import (
 	"testing"
 )
 
+// pretty printの出力確認用
+func TestPrettyPrint(t *testing.T) {
+	type TestObj struct {
+		v0 interface{}
+		v1 bool
+		v2 float32
+		v3 float64
+		v4 complex64
+		v5 complex128
+	}
+
+	var obj = TestObj{v0: strangelove, v1: false, v2: 3.75, v3: 12345.67890, v4: 1.25 + 0.75i, v5: 12345.67890 + 9876.543210i}
+	// Pretty-print it:
+	data, err := MarshalIndent(&obj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("MarshalIdent() = %s\n", data)
+}
+
 func TestBool(t *testing.T) {
 	test(true, t)
 	test(false, t)
