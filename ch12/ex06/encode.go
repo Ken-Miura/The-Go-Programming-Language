@@ -142,28 +142,24 @@ func checkIfValueIsDefault(v reflect.Value) bool {
 		} else {
 			return true
 		}
-
 	case reflect.Float32, reflect.Float64:
 		if v.Float() == 0.0 {
 			return true
 		} else {
 			return false
 		}
-
 	case reflect.Complex64, reflect.Complex128:
 		if v.Complex() == 0+0i {
 			return true
 		} else {
 			return false
 		}
-
 	case reflect.Ptr, reflect.Slice, reflect.Map, reflect.Interface, reflect.Chan, reflect.Func:
 		if v.IsNil() {
 			return true
 		} else {
 			return false
 		}
-
 	default:
 		return false
 	}
