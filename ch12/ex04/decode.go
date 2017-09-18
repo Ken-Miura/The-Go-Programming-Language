@@ -1,5 +1,5 @@
 // Copyright 2017 Ken Miura
-package ex03
+package ex04
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ type Movie struct {
 }
 
 func init() {
-	TypeCache["ex03.Movie"] = reflect.TypeOf(Movie{})
+	TypeCache["ex04.Movie"] = reflect.TypeOf(Movie{})
 }
 
 func Unmarshal(data []byte, out interface{}) (err error) {

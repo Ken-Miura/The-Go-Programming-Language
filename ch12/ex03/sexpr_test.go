@@ -6,26 +6,6 @@ import (
 	"testing"
 )
 
-// pretty printの出力確認用
-func TestPrettyPrint(t *testing.T) {
-	type TestObj struct {
-		v0 interface{}
-		v1 bool
-		v2 float32
-		v3 float64
-		v4 complex64
-		v5 complex128
-	}
-
-	var obj = TestObj{v0: strangelove, v1: false, v2: 3.75, v3: 12345.67890, v4: 1.25 + 0.75i, v5: 12345.67890 + 9876.543210i}
-	// Pretty-print it:
-	data, err := MarshalIndent(&obj)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
-}
-
 func TestBool(t *testing.T) {
 	test(true, t)
 	test(false, t)
@@ -61,13 +41,6 @@ func TestInterface(t *testing.T) {
 	if !reflect.DeepEqual(decodedI, strangelove) {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(&i)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 func test(b bool, t *testing.T) {
@@ -89,13 +62,6 @@ func test(b bool, t *testing.T) {
 	if decodedB != b {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(b)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 func testFloat32(t *testing.T) {
@@ -119,13 +85,6 @@ func testFloat32(t *testing.T) {
 	if decodedF != f {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 func testFloat64(t *testing.T) {
@@ -148,13 +107,6 @@ func testFloat64(t *testing.T) {
 	if decodedF != f {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 func testComplex64(t *testing.T) {
@@ -177,13 +129,6 @@ func testComplex64(t *testing.T) {
 	if decodedC != c {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(c)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 func testComplex128(t *testing.T) {
@@ -206,13 +151,6 @@ func testComplex128(t *testing.T) {
 	if decodedC != c {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(c)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 func Test(t *testing.T) {
@@ -234,13 +172,6 @@ func Test(t *testing.T) {
 	if !reflect.DeepEqual(movie, strangelove) {
 		t.Fatal("not equal")
 	}
-
-	// Pretty-print it:
-	data, err = MarshalIndent(strangelove)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MarshalIdent() = %s\n", data)
 }
 
 var strangelove = Movie{
