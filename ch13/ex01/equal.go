@@ -1,3 +1,4 @@
+// Copyright 2017 Ken Miura
 package ex01
 
 import (
