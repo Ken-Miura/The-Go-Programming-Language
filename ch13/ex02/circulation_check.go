@@ -35,6 +35,20 @@ func isCircularDataStructure(v reflect.Value, seen map[data]bool) bool {
 		return result
 	case reflect.Ptr, reflect.Interface:
 		return isCircularDataStructure(v.Elem(), seen)
+	case reflect.Slice, reflect.Array:
+		result := false
+		for i := 0; i < v.Len(); i++ {
+			r := isCircularDataStructure(v.Index(i), seen)
+			result = result || r
+		}
+		return result
+	case reflect.Map:
+		result := false
+		for _, k := range v.MapKeys() {
+			r := isCircularDataStructure(v.MapIndex(k), seen)
+			result = result || r
+		}
+		return result
 	}
 	return false
 }
