@@ -17,7 +17,6 @@ type writer struct {
 	bzip2    *exec.Cmd
 	bzip2In  io.WriteCloser
 	bzip2Out io.ReadCloser
-	outbuf   []byte
 }
 
 // NewWriter returns a writer for bzip2-compressed streams.
@@ -37,8 +36,6 @@ func NewWriter(out io.Writer) io.WriteCloser {
 		panic(fmt.Sprintf("cannot get bzip2 stdout: %v", err))
 	}
 	w.bzip2Out = cmdOut
-
-	w.outbuf = make([]byte, 64*1024)
 
 	if err := w.bzip2.Start(); err != nil {
 		panic(fmt.Sprintf("cannot start bzip2 process: %v", err))
