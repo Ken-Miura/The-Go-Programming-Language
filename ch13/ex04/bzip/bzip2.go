@@ -22,20 +22,18 @@ type writer struct {
 // NewWriter returns a writer for bzip2-compressed streams.
 func NewWriter(out io.Writer) io.WriteCloser {
 	w := &writer{w: out}
-	cmd := exec.Command("bzip2")
-	w.bzip2 = cmd
+	w.bzip2 = exec.Command("bzip2")
 
-	cmdIn, err := cmd.StdinPipe()
+	var err error
+	w.bzip2In, err = w.bzip2.StdinPipe()
 	if err != nil {
 		panic(fmt.Sprintf("cannot get bzip2 stdin: %v", err))
 	}
-	w.bzip2In = cmdIn
 
-	cmdOut, err := cmd.StdoutPipe()
+	w.bzip2Out, err = w.bzip2.StdoutPipe()
 	if err != nil {
 		panic(fmt.Sprintf("cannot get bzip2 stdout: %v", err))
 	}
-	w.bzip2Out = cmdOut
 
 	if err := w.bzip2.Start(); err != nil {
 		panic(fmt.Sprintf("cannot start bzip2 process: %v", err))
