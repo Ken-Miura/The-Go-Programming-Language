@@ -19,32 +19,24 @@ func Display(name string, x interface{}) {
 // 練習問題12の2により、display呼び出し回数のパラメータとdisplay呼び出し回数チェックを追加
 func display(path string, v reflect.Value, nCalls int) {
 	nCalls++
+	if nCalls > callDisplayLimit {
+		fmt.Printf("%s -> error (circulation detected)\n", path)
+		return
+	}
 	switch v.Kind() {
 	case reflect.Invalid:
 		fmt.Printf("%s = invalid\n", path)
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < v.Len(); i++ {
-			if nCalls > callDisplayLimit {
-				fmt.Printf("%s -> error (investigation more than %d times was executed per element. circulation might have happened)\n", path, callDisplayLimit)
-				return
-			}
 			display(fmt.Sprintf("%s[%d]", path, i), v.Index(i), nCalls)
 		}
 	case reflect.Struct:
 		for i := 0; i < v.NumField(); i++ {
-			if nCalls > callDisplayLimit {
-				fmt.Printf("%s -> error (investigation more than %d times was executed per element. circulation might have happened)\n", path, callDisplayLimit)
-				return
-			}
 			fieldPath := fmt.Sprintf("%s.%s", path, v.Type().Field(i).Name)
 			display(fieldPath, v.Field(i), nCalls)
 		}
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
-			if nCalls > callDisplayLimit {
-				fmt.Printf("%s -> error (investigation more than %d times was executed per element. circulation might have happened)\n", path, callDisplayLimit)
-				return
-			}
 			display(fmt.Sprintf("%s[%s]", path,
 				formatAtom(key)), v.MapIndex(key), nCalls)
 		}
@@ -52,20 +44,12 @@ func display(path string, v reflect.Value, nCalls int) {
 		if v.IsNil() {
 			fmt.Printf("%s = nil\n", path)
 		} else {
-			if nCalls > callDisplayLimit {
-				fmt.Printf("%s -> error (investigation more than %d times was executed per element. circulation might have happened)\n", path, callDisplayLimit)
-				return
-			}
 			display(fmt.Sprintf("(*%s)", path), v.Elem(), nCalls)
 		}
 	case reflect.Interface:
 		if v.IsNil() {
 			fmt.Printf("%s = nil\n", path)
 		} else {
-			if nCalls > callDisplayLimit {
-				fmt.Printf("%s -> error (investigation more than %d times was executed per element. circulation might have happened)\n", path, callDisplayLimit)
-				return
-			}
 			fmt.Printf("%s.type = %s\n", path, v.Elem().Type())
 			display(path+".value", v.Elem(), nCalls)
 		}
