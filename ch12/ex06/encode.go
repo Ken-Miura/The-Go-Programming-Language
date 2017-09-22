@@ -66,9 +66,6 @@ func encode(buf *bytes.Buffer, v reflect.Value) error {
 	case reflect.Map: // ((key value) ...)
 		buf.WriteByte('(')
 		for i, key := range v.MapKeys() {
-			if checkIfValueIsDefault(v.MapIndex(key)) {
-				continue
-			}
 			if i > 0 {
 				buf.WriteByte(' ')
 			}
