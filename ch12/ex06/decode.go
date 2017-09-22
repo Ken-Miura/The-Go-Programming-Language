@@ -17,8 +17,6 @@ type TestObject struct {
 	v2 float64
 	v3 complex128
 	V4 bool
-	v5 map[string]string
-	v6 []string
 }
 
 func init() {
