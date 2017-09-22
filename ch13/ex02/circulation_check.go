@@ -11,12 +11,12 @@ type data struct {
 	t reflect.Type
 }
 
-func IsCircularDataStructure(v interface{}) bool {
+func IsCyclic(v interface{}) bool {
 	seen := make(map[data]bool)
-	return isCircularDataStructure(reflect.ValueOf(v), seen)
+	return isCyclic(reflect.ValueOf(v), seen)
 }
 
-func isCircularDataStructure(v reflect.Value, seen map[data]bool) bool {
+func isCyclic(v reflect.Value, seen map[data]bool) bool {
 	if v.CanAddr() {
 		vptr := unsafe.Pointer(v.UnsafeAddr())
 		d := data{vptr, v.Type()}
@@ -29,26 +29,26 @@ func isCircularDataStructure(v reflect.Value, seen map[data]bool) bool {
 	case reflect.Struct:
 		result := false
 		for i := 0; i < v.NumField(); i++ {
-			r := isCircularDataStructure(v.Field(i), seen)
+			r := isCyclic(v.Field(i), seen)
 			result = result || r
 		}
 		return result
 	case reflect.Ptr, reflect.Interface:
-		return isCircularDataStructure(v.Elem(), seen)
+		return isCyclic(v.Elem(), seen)
 	case reflect.Slice, reflect.Array:
 		result := false
 		for i := 0; i < v.Len(); i++ {
-			r := isCircularDataStructure(v.Index(i), seen)
+			r := isCyclic(v.Index(i), seen)
 			result = result || r
 		}
 		return result
 	case reflect.Map:
-		result := false
 		for _, k := range v.MapKeys() {
-			r := isCircularDataStructure(v.MapIndex(k), seen)
-			result = result || r
+			if isCyclic(v.MapIndex(k), seen) {
+				return true
+			}
 		}
-		return result
+		return false
 	}
 	return false
 }

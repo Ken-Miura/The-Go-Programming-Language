@@ -12,8 +12,8 @@ func TestIsCircularDataStructure(t *testing.T) {
 	var cyclePtr1 CyclePtr
 	cyclePtr1 = &cyclePtr1
 
-	if !ex02.IsCircularDataStructure(cyclePtr1) {
-		t.Errorf("IsCircularDataStructure(cyclePtr1) returned false")
+	if !ex02.IsCyclic(cyclePtr1) {
+		t.Errorf("IsCyclic(cyclePtr1) returned false")
 	}
 
 	type link struct {
@@ -23,16 +23,16 @@ func TestIsCircularDataStructure(t *testing.T) {
 	a, b, c := &link{value: "a"}, &link{value: "b"}, &link{value: "c"}
 	a.tail, b.tail, c.tail = b, a, c
 
-	if !ex02.IsCircularDataStructure(a) {
-		t.Errorf("IsCircularDataStructure(a) returned false")
+	if !ex02.IsCyclic(a) {
+		t.Errorf("IsCyclic(a) returned false")
 	}
 
-	if !ex02.IsCircularDataStructure(b) {
-		t.Errorf("IsCircularDataStructure(b) returned false")
+	if !ex02.IsCyclic(b) {
+		t.Errorf("IsCyclic(b) returned false")
 	}
 
-	if !ex02.IsCircularDataStructure(c) {
-		t.Errorf("IsCircularDataStructure(c) returned false")
+	if !ex02.IsCyclic(c) {
+		t.Errorf("IsCyclic(c) returned false")
 	}
 
 	type Movie struct {
@@ -62,7 +62,7 @@ func TestIsCircularDataStructure(t *testing.T) {
 		},
 	}
 
-	if ex02.IsCircularDataStructure(strangelove) {
-		t.Errorf("IsCircularDataStructure(strangelove) returned true")
+	if ex02.IsCyclic(strangelove) {
+		t.Errorf("IsCyclic(strangelove) returned true")
 	}
 }
